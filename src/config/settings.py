@@ -44,7 +44,7 @@ class AppSettings(BaseSettings):
         APIServer(url="https://api.hvh.com", description="Production server"),
     ]
 
-    db_uri: PostgresDsn = "postgres://postgres:postgres@db:5432/postgres"
+    db_uri: PostgresDsn = "postgresql+asyncpg://postgres:postgres@db:5432/postgres"
     db_config: DatabaseConfig = DatabaseConfig()
     radis_uri: RedisDsn = "redis://redis:6379/0"
 
@@ -78,5 +78,5 @@ class AppSettings(BaseSettings):
             "docs_url": self.docs_url,
             "redoc_url": self.redoc_url,
             "swagger_ui_oauth2_redirect_url": self.swagger_ui_oauth2_redirect_url,
-            "servers": [server.model_dump() for server in self.servers],
+            # "servers": [server.model_dump() for server in self.servers],
         }

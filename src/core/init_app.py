@@ -1,30 +1,41 @@
+import logging
+
 from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError
 from starlette.middleware.cors import CORSMiddleware
 
+from apps.users.api import auth_router
+from config.settings import AppSettings
+from .async_logger import DEFAULT_LOGGERS, HandlerItem, init_logger
+from .async_logger.handlers import PrintLog
 from .exceptions import APIException, integrity_error_handler, on_api_exception, validation_exception_handler
 
+logger = logging.getLogger(__name__)
 
 class App(FastAPI):
+    __settings: AppSettings
     def __init__(self):
-        self.settings = self.get_settings()
-        super().__init__(**self.settings.init_settings())
+        self.__settings = self.get_settings()
+        super().__init__(**self.__settings.init_settings())
+        self.init_logger()
         self.register_routers()
         self.register_exceptions()
         self.register_middlewares()
 
-    @classmethod
-    def get_settings(cls):
-        from config import settings
-
-        return settings.AppSettings()
+    @staticmethod
+    def get_settings() -> AppSettings:
+        return AppSettings()
 
     def register_routers(self):
         @self.get("/healthcheck")
         def healthcheck():
             return {"status": "ok"}
+
+        self.include_router(auth_router)
+
+
 
     def register_exceptions(self):
         self.add_exception_handler(APIException, on_api_exception)  # noqa: type
@@ -32,12 +43,31 @@ class App(FastAPI):
         self.add_exception_handler(IntegrityError, integrity_error_handler)  # noqa: type
 
     def register_middlewares(self):
-        self.add_middleware(CorrelationIdMiddleware)  # noqa: type
         self.add_middleware(
             CORSMiddleware,  # noqa: type
-            allow_origins=self.settings.cors_allowed_origins,
-            allow_credentials=self.settings.cors_allow_credentials,
-            allow_methods=self.settings.cors_allow_methods,
-            allow_headers=self.settings.cors_allow_headers,
+            allow_origins=self.__settings.cors_allowed_origins,
+            allow_credentials=self.__settings.cors_allow_credentials,
+            allow_methods=self.__settings.cors_allow_methods,
+            allow_headers=self.__settings.cors_allow_headers,
             expose_headers=["X-Request-ID"],
         )
+
+    def init_logger(self):
+        handlers = [
+            HandlerItem(func=PrintLog()),
+            # HandlerItem(
+            #     func=WriteLogInFiles(
+            #         self.__settings.worker.debug,
+            #         self.__settings.common.max_log_files,
+            #         self.__settings.common.max_log_file_size_mb,
+            #     ),
+            # ),
+        ]
+        for el in DEFAULT_LOGGERS:
+            el.handlers = handlers
+        init_logger(
+            self,
+            handlers=handlers,
+            loggers=DEFAULT_LOGGERS
+        )
+        logger.debug(f"Настройки: {self.__settings.model_dump_json(indent=2)}")
