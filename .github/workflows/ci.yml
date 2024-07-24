@@ -77,10 +77,10 @@ jobs:
     services:
       postgres:
         image: postgres:16
-#        env:
-#          POSTGRES_USER: postgres
-#          POSTGRES_PASSWORD: postgres
-#          POSTGRES_DB:
+        #        env:
+        #          POSTGRES_USER: postgres
+        #          POSTGRES_PASSWORD: postgres
+        #          POSTGRES_DB:
         options: >-
           --health-cmd pg_isready
           --health-interval 10s

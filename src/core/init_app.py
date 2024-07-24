@@ -4,7 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError
 from starlette.middleware.cors import CORSMiddleware
 
-from .exceptions import integrity_error_handler, APIException, on_api_exception, validation_exception_handler
+from .exceptions import APIException, integrity_error_handler, on_api_exception, validation_exception_handler
 
 
 class App(FastAPI):
@@ -18,6 +18,7 @@ class App(FastAPI):
     @classmethod
     def get_settings(cls):
         from config import settings
+
         return settings.AppSettings()
 
     def register_routers(self):
@@ -38,5 +39,5 @@ class App(FastAPI):
             allow_credentials=self.settings.cors_allow_credentials,
             allow_methods=self.settings.cors_allow_methods,
             allow_headers=self.settings.cors_allow_headers,
-            expose_headers=['X-Request-ID'],
+            expose_headers=["X-Request-ID"],
         )

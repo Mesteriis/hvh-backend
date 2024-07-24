@@ -99,6 +99,8 @@ select = [
 ignore = [
     "E501",   # LineTooLong
     "E731",   # DoNotAssignLambda
+    "N818",   # Exception name should be named with an Error suffix
+    "RUF005", # Consider iterable unpacking instead of concatenation
 ]
 
 [tool.ruff.format]

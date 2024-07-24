@@ -33,22 +33,18 @@ repos:
         name: hadolint
         entry: hadolint
         language: system
-        types: [ dockerfile ]
+        types: [dockerfile]
         files: ^docker/.*/Dockerfile$
-        args: [
-          "--ignore", "DL3013",
-          "--ignore", "DL3042"
-        ]
+        args: ["--ignore", "DL3013", "--ignore", "DL3042"]
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
     rev: v1.3.3
     hooks:
       - id: python-safety-dependencies-check
-        args: [ "--short-report", "--ignore=70612" ]
+        args: ["--short-report", "--ignore=70612"]
         files: pyproject.toml
-
 
 ci:
   autoupdate_schedule: weekly
-  skip: [ ]
+  skip: []
   submodules: false

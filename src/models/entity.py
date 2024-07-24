@@ -1,10 +1,9 @@
 import uuid
 
+from config.db import Base
 from sqlalchemy import Column, ForeignKey, String, Uuid
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, relationship
-
-from config.db import Base
 
 
 class DigestEntityProperties(Base):
