@@ -14,8 +14,10 @@ from .exceptions import APIException, integrity_error_handler, on_api_exception,
 
 logger = logging.getLogger(__name__)
 
+
 class App(FastAPI):
     __settings: AppSettings
+
     def __init__(self):
         self.__settings = self.get_settings()
         super().__init__(**self.__settings.init_settings())
@@ -34,8 +36,6 @@ class App(FastAPI):
             return {"status": "ok"}
 
         self.include_router(auth_router)
-
-
 
     def register_exceptions(self):
         self.add_exception_handler(APIException, on_api_exception)  # noqa: type
