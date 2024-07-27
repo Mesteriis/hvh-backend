@@ -38,22 +38,18 @@ class AppSettings(BaseSettings):
 
     swagger_ui_oauth2_redirect_url: str = "/docs/oauth2-redirect"
 
-    servers: list[APIServer] = [
-        APIServer(url="http://localhost:8000", description="Local development server"),
-        APIServer(url="https://api.stage.hvh.com", description="Stage server"),
-        APIServer(url="https://api.hvh.com", description="Production server"),
-    ]
-
     db_uri: PostgresDsn = "postgresql+asyncpg://postgres:postgres@db:5432/postgres"
     db_config: DatabaseConfig = DatabaseConfig()
     radis_uri: RedisDsn = "redis://redis:6379/0"
 
+    tg_bot_token: str | None = None
+
     cors_allowed_origins: list = [
-        "http://localhost:8000",
-        "http://localhost:8080",
-        "http://localhost:5000",
-        "http://localhost:3000",
-    ] + decouple.config("CORS_ALLOWED_ORIGINS", default="", cast=str).split(",")
+                                     "http://localhost:8000",
+                                     "http://localhost:8080",
+                                     "http://localhost:5000",
+                                     "http://localhost:3000",
+                                 ] + decouple.config("CORS_ALLOWED_ORIGINS", default="", cast=str).split(",")
     cors_allow_credentials: bool = True
     cors_allow_methods: list = ["*"]
     cors_allow_headers: list = ["*"]
@@ -65,8 +61,6 @@ class AppSettings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 1440  # 1 day
     jwt_refresh_token_expire_minutes: int = 10080  # 7 days
-
-    tg_bot_token: str | None = None
 
     def init_settings(self) -> dict[str, Any]:
         return {
