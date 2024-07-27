@@ -1,7 +1,8 @@
 import logging
+from collections.abc import Callable
 from contextvars import ContextVar
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from starlette.datastructures import MutableHeaders
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("asgi_correlation_id")
 
-correlation_id: ContextVar[Optional[str]] = ContextVar("correlation_id", default=None)
+correlation_id: ContextVar[str | None] = ContextVar("correlation_id", default=None)
 
 
 def is_valid_uuid4(uuid_: str) -> bool:
@@ -29,28 +30,15 @@ FAILED_VALIDATION_MESSAGE = "значение заголовка запроса 
 
 @dataclass
 class CorrelationIdMiddleware:
-    """
-    Cлужит для управления идентификатором корреляции (correlation ID), который является полезным для слежения и связи
-    между запросами и ответами в распределенной системе.
-    """
-
     app: "ASGIApp"
     header_name: str = "X-Request-ID"
     update_request_header: bool = True
 
     generator: Callable[[], str] = field(default=lambda: uuid4().hex)
-    validator: Optional[Callable[[str], bool]] = field(default=is_valid_uuid4)
-    transformer: Optional[Callable[[str], str]] = field(default=lambda a: a)
+    validator: Callable[[str], bool] | None = field(default=is_valid_uuid4)
+    transformer: Callable[[str], str] | None = field(default=lambda a: a)
 
     async def __call__(self, scope: "Scope", receive: "Receive", send: "Send") -> None:
-        """
-        Загружает ID запроса из заголовков, если он существует. Если заголовок отсутствует
-        или его значение недействительно (определяется с помощью метода валидации), генерируется новый ID.
-        Если необходимо, ID преобразуется, а затем устанавливается в текущем контексте и,
-        если идентификатор корреляции отличается от изначального значения и update_request_header установлен как True,
-        новый ID устанавливается в заголовки. Если валидация не удалась, выводится предупреждающее сообщение.
-
-        """
         if scope["type"] not in ("http", "websocket"):
             await self.app(scope, receive, send)
             return

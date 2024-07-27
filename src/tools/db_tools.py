@@ -1,4 +1,4 @@
-from config.db import engine, Base
+from config.db import Base, engine
 
 
 async def create_db_and_tables():

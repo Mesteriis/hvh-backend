@@ -1,7 +1,7 @@
-from logging import Handler, Formatter
-from typing import Callable
+from collections.abc import Callable
+from logging import Formatter, Handler
 
-from pydantic import BaseModel, model_validator, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from .dispatcher import AsyncLogDispatcher
 from .formatter import JSONLogFormatter

@@ -12,14 +12,14 @@ from logging.config import dictConfig
 from fastapi import FastAPI
 
 from .config import (
-    HandlerItem,
-    LoggersItem,
     DEFAULT_HANDLERS,
     DEFAULT_LOGGERS,
-    json_formatter,
+    HandlerItem,
     LoggerSettings,
+    LoggersItem,
+    json_formatter,
 )
-from .middlewares import LoggingMiddleware, CorrelationIdMiddleware
+from .middlewares import CorrelationIdMiddleware, LoggingMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -68,4 +68,4 @@ def init_logger(
             )
             dictConfig(settings.convert_to_log_settings())
     finally:
-        app.add_middleware(CorrelationIdMiddleware) # noqa: type
+        app.add_middleware(CorrelationIdMiddleware)  # noqa: type

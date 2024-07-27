@@ -1,5 +1,3 @@
-from typing import Union
-
 from pydantic import BaseModel
 
 
@@ -15,8 +13,8 @@ class LogLevelStringColor(BaseModel):
     """
 
     level_name: str
-    fore: Union[str, None] = None
-    back: Union[str, None] = None
+    fore: str | None = None
+    back: str | None = None
 
     class Config:
         arbitrary_types_allowed = True

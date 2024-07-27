@@ -15,22 +15,12 @@ class AsyncLogDispatcher(logging.Handler):
 
     importer = staticmethod(__import__)
 
-    def __init__(
-        self,
-        func,
-        use_thread=True,
-        use_celery=False,
-        thread_worker=None,
-        *args,
-        **kwargs
-    ):
-
+    def __init__(self, func, use_thread=True, use_celery=False, thread_worker=None, *args, **kwargs):
         if use_thread and use_celery:
             raise ValueError("Can not both use thread and celery.")
         elif not use_thread and not use_celery:
             raise ValueError(
-                "None of approach are given, set either use_thread or "
-                "use_celery to True.",
+                "None of approach are given, set either use_thread or use_celery to True.",
             )
 
         if isinstance(func, str):
@@ -73,12 +63,11 @@ class AsyncLogDispatcher(logging.Handler):
             return found
         except ImportError:
             e, tb = sys.exc_info()[1:]
-            v = ValueError("Cannot resolve {!r}: {}".format(s, e))
+            v = ValueError(f"Cannot resolve {s!r}: {e}")
             v.__cause__, v.__traceback__ = e, tb
             raise v
 
     def close(self):
-
         if self.use_thread and self._thread_executor:
             self._thread_executor.shutdown(wait=True)
         super().close()

@@ -1,13 +1,12 @@
 import uuid
 
+from apps.users.models import User
+from apps.users.service import UserManager, auth_backend
+from config.db import get_session
 from fastapi import Depends
 from fastapi_users import FastAPIUsers
 from fastapi_users.db import SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from apps.users.models import User
-from apps.users.service import auth_backend, UserManager
-from config.db import get_session
 
 
 async def get_user_db(session: AsyncSession = Depends(get_session)):

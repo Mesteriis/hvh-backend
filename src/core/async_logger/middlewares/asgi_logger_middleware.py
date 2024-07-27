@@ -69,7 +69,7 @@ class LoggingMiddleware:
         # Response Side
         try:
             response = await call_next(request)
-        except Exception as ex:  # noqa: B902
+        except Exception as ex:
             response_body = bytes(http.HTTPStatus.INTERNAL_SERVER_ERROR.phrase.encode())
             response = Response(
                 content=response_body,
@@ -118,7 +118,7 @@ class LoggingMiddleware:
         message = (
             f'{"Ошибка" if exception_object else "Ответ"} '
             f"с кодом {response.status_code} "
-            f'на запрос {request.method} "{str(request.url)}", '
+            f'на запрос {request.method} "{request.url!s}", '
             f"за {duration} мс"
         )
         logger.info(

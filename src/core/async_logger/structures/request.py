@@ -1,5 +1,3 @@
-from typing import Union
-
 from pydantic import BaseModel
 
 
@@ -18,11 +16,11 @@ class RequestJsonLogSchema(BaseModel):
     request_content_type: str = None
     request_headers: dict = None
     request_body: str = None
-    request_direction: Union[int, str] = None
+    request_direction: int | str = None
     remote_ip: str = None
     remote_port: int = None
     response_status_code: int
     response_size: int
     response_headers: str = None
-    response_body: Union[str, bytes] = None
-    duration: Union[int, float]
+    response_body: str | bytes = None
+    duration: int | float

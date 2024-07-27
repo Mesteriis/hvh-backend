@@ -4,7 +4,7 @@ import traceback
 
 from .abstract import ABCFormatter
 from .constants import NAMED_LOG_LEVEL
-from .structures.base import LogMessage, BaseJsonLogSchema
+from .structures.base import BaseJsonLogSchema, LogMessage
 
 
 class JSONLogFormatter(ABCFormatter, logging.Formatter):
@@ -40,12 +40,7 @@ class JSONLogFormatter(ABCFormatter, logging.Formatter):
         :return: Словарь с объектами журнала.
         """
 
-        now = (
-            datetime.datetime.fromtimestamp(record.created)
-            .astimezone()
-            .replace(microsecond=0)
-            .isoformat()
-        )
+        now = datetime.datetime.fromtimestamp(record.created).astimezone().replace(microsecond=0).isoformat()
         message = record.getMessage()
         duration = record.duration if hasattr(record, "duration") else record.msecs
         json_log_fields = BaseJsonLogSchema(

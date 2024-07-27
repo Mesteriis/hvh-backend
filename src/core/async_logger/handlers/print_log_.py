@@ -1,4 +1,5 @@
-from colorama import init as colorama_init, Style
+from colorama import Style
+from colorama import init as colorama_init
 
 from ..abstract import ABCHandler
 from ..constants import NAMED_LOG_LEVEL_COLOR

@@ -1,13 +1,12 @@
 import logging
 
-from asgi_correlation_id import CorrelationIdMiddleware
+from apps.users.api import auth_router
+from config.settings import AppSettings
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError
 from starlette.middleware.cors import CORSMiddleware
 
-from apps.users.api import auth_router
-from config.settings import AppSettings
 from .async_logger import DEFAULT_LOGGERS, HandlerItem, init_logger
 from .async_logger.handlers import PrintLog
 from .exceptions import APIException, integrity_error_handler, on_api_exception, validation_exception_handler
@@ -65,9 +64,5 @@ class App(FastAPI):
         ]
         for el in DEFAULT_LOGGERS:
             el.handlers = handlers
-        init_logger(
-            self,
-            handlers=handlers,
-            loggers=DEFAULT_LOGGERS
-        )
+        init_logger(self, handlers=handlers, loggers=DEFAULT_LOGGERS)
         logger.debug(f"Настройки: {self.__settings.model_dump_json(indent=2)}")

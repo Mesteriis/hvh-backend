@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Union
 
 from pydantic import BaseModel
 
@@ -9,7 +8,7 @@ class BaseJsonLogSchema(BaseModel):
     Схема основного тела лога в формате JSON
     """
 
-    thread: Union[int, str]
+    thread: int | str
     level: int
     level_name: str
     message: str
@@ -18,11 +17,11 @@ class BaseJsonLogSchema(BaseModel):
     app_name: str
     app_version: str
     app_env: str
-    duration: Union[int, float]
-    exceptions: Union[list[str], None] = None
-    trace_id: Union[str, None] = None
-    span_id: Union[str, None] = None
-    parent_id: Union[str, None] = None
+    duration: int | float
+    exceptions: list[str] | None = None
+    trace_id: str | None = None
+    span_id: str | None = None
+    parent_id: str | None = None
 
     class Config:
         populate_by_name = True
@@ -39,7 +38,7 @@ class LogMessage(BaseModel):
     app_env: str
     app_name: str
     app_version: str
-    duration: Union[int, float]
+    duration: int | float
     exceptions: list = None
     level_name: str
     level: int
@@ -57,13 +56,13 @@ class LogMessage(BaseModel):
     request_referer: str = None
     request_size: int = None
     request_uri: str = None
-    response_body: Union[str, bytes] = None
+    response_body: str | bytes = None
     response_headers: str = None
     response_size: int = None
     response_status_code: int = None
     source: str
     timestamp: datetime
-    thread: Union[int, str]
-    trace_id: Union[str, None] = None
-    span_id: Union[str, None] = None
-    parent_id: Union[str, None] = None
+    thread: int | str
+    trace_id: str | None = None
+    span_id: str | None = None
+    parent_id: str | None = None
