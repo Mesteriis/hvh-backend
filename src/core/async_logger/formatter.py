@@ -22,7 +22,7 @@ class JSONLogFormatter(ABCFormatter, logging.Formatter):
                 del kwargs[k]
         super().__init__(*args, **kwargs)
 
-    def format(self, record: logging.LogRecord, *args, **kwargs) -> LogMessage:
+    def format(self, record: logging.LogRecord, *_, **__) -> LogMessage:
         """
         Преобразование объекта в LogMessage
 

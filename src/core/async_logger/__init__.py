@@ -50,7 +50,7 @@ def init_logger(
             },
         )
     except Exception as e:
-        logger.error(f"Ошибка журнала настроек инициализации: {e}")
+        logger.exception(f"Ошибка журнала настроек инициализации: {e}")
         logger.info("Инициализирован асинхронный logger настроек по умолчанию")
     else:
         try:
@@ -58,7 +58,7 @@ def init_logger(
             dictConfig(data_settings)
             app.middleware("http")(LoggingMiddleware())
         except Exception as e:
-            logger.error(f"Ошибка инициализации асинхронного logger: {e}")
+            logger.exception(f"Ошибка инициализации асинхронного logger: {e}")
             logger.info("Инициализировать logger по умолчанию")
             settings = LoggerSettings.model_validate(
                 {

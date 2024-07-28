@@ -39,7 +39,7 @@ class LoggingMiddleware:
         async def receive() -> Message:
             return {"type": "http.request", "body": body}
 
-        request._receive = receive
+        request._receive = receive  # noqa: SLF001
 
     async def get_body(self, request: Request) -> bytes:
         body = await request.body()
@@ -50,8 +50,8 @@ class LoggingMiddleware:
         self,
         request: Request,
         call_next: RequestResponseEndpoint,
-        *args,
-        **kwargs,
+        *__,
+        **_,
     ):
         start_time = time.time()
         exception_object = None
@@ -61,7 +61,7 @@ class LoggingMiddleware:
             await self.set_body(request, raw_request_body)
             raw_request_body = await self.get_body(request)
             request_body = raw_request_body.decode()
-        except Exception:  # noqa
+        except Exception:
             request_body = EMPTY_VALUE
 
         server: tuple = request.get("server", ("localhost", "8000"))

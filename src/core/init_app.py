@@ -54,15 +54,9 @@ class App(FastAPI):
     def init_logger(self):
         handlers = [
             HandlerItem(func=PrintLog()),
-            # HandlerItem(
-            #     func=WriteLogInFiles(
-            #         self.__settings.worker.debug,
-            #         self.__settings.common.max_log_files,
-            #         self.__settings.common.max_log_file_size_mb,
-            #     ),
-            # ),
         ]
         for el in DEFAULT_LOGGERS:
             el.handlers = handlers
         init_logger(self, handlers=handlers, loggers=DEFAULT_LOGGERS)
-        logger.debug(f"Настройки: {self.__settings.model_dump_json(indent=2)}")
+        msg = f"Настройки: {self.__settings.model_dump_json(indent=2)}"
+        logger.debug(msg)

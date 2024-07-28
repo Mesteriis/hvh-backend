@@ -60,12 +60,12 @@ class AsyncLogDispatcher(logging.Handler):
                 except AttributeError:
                     self.importer(used)
                     found = getattr(found, frag)
-            return found
-        except ImportError:
+            return found  # noqa: TRY300
+        except ImportError as ee:
             e, tb = sys.exc_info()[1:]
             v = ValueError(f"Cannot resolve {s!r}: {e}")
             v.__cause__, v.__traceback__ = e, tb
-            raise v
+            raise v from ee
 
     def close(self):
         if self.use_thread and self._thread_executor:

@@ -69,7 +69,7 @@ class ClassFinder:
         for root, _, files in os.walk(self.directory):
             for file in files:
                 if file.endswith(".py"):
-                    python_files.append(os.path.join(root, file))
+                    python_files.append(os.path.join(root, file))  # noqa: PTH118
         return python_files
 
     def find_classes_in_file(self, file_path) -> list[tuple[str, list[str]]]:
@@ -82,7 +82,7 @@ class ClassFinder:
         Returns:
             list[tuple[str, list[str]]]: A list of tuples containing class names and their base classes.
         """
-        with open(file_path, encoding="utf-8") as file:
+        with open(file_path, encoding="utf-8") as file:  # noqa: PTH123
             tree = ast.parse(file.read(), filename=file_path)
 
         classes = []
@@ -122,7 +122,7 @@ class ClassFinder:
         for file_path, class_list in classes.items():
             for class_name, bases in class_list:
                 if self.find_sub_class.__name__ in bases:
-                    module_path = os.path.splitext(os.path.relpath(file_path, self.directory))[0].replace(os.sep, ".")
+                    module_path = os.path.splitext(os.path.relpath(file_path, self.directory))[0].replace(os.sep, ".")  # noqa: PTH122
                     import_statements.append((module_path, class_name))
         return import_statements
 
@@ -143,7 +143,7 @@ class ClassFinder:
                 module = importlib.import_module(module_path)
                 _ = getattr(module, class_name)
                 answer.append(f"\033[32m{msg.ljust(50, "."):<50}... OK\033[0m")
-            except Exception as e:  # noqa:BLE001
+            except Exception as e:
                 answer.append(f"\033[31m{msg.ljust(50, "."):<50}... FAIL: {e.__class__.__name__}\033[0m")
         return answer
 

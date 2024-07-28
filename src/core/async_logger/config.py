@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from logging import Formatter, Handler
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict
 
 from .dispatcher import AsyncLogDispatcher
 from .formatter import JSONLogFormatter
@@ -94,14 +94,6 @@ class LoggerSettings(BaseModelConfig):
     formatters: list[FormatterItem] = [json_formatter]
     handlers: list[HandlerItem]
     loggers: list[LoggersItem]
-
-    @model_validator(mode="before")
-    def check_relation_handler_and_formatter(cls, v):
-        # formatters = [item for item in v['formatters']]
-        # for handler in v.handlers:
-        #     if handler.formatter.name not in formatters:
-        #         raise ValidationError(f"Formatter {handler.formatter} not found in formatters")
-        return v
 
     def convert_to_log_settings(self):
         data = {

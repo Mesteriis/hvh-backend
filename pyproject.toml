@@ -102,6 +102,20 @@ ignore = [
     "E731",   # DoNotAssignLambda
     "N818",   # Exception name should be named with an Error suffix
     "RUF005", # Consider iterable unpacking instead of concatenation
+    "B008", # Do not perform function call `Depends` in argument defaults; instead, perform the call within the
+    #function, or read the default from a module-level singleton variable
+    "EM102", # Exception must not use an f-string literal, assign to variable first
+    "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
+    "TRY003", # Avoid specifying long messages outside the exception class
+    "RUF001", # String contains ambiguous `с` (CYRILLIC SMALL LETTER ES). Did you mean `c` (LATIN SMALL LETTER C)?
+    "RUF002", # Docstring contains ambiguous `с` (CYRILLIC SMALL LETTER ES). Did you mean `c` (LATIN SMALL LETTER C)?
+    "BLE001", # Do not catch blind exception: `Exception`
+    "PGH003", # Use specific rule codes when ignoring type issues
+    "G004", # Logging statement uses f-string
+    "EM101", # Exception must not use a string literal, assign to variable first
+    "TRY401", # Redundant exception object included in `logging.exception` call
+    "N805", # First argument of a method should be named `self`
+
 ]
 
 [tool.ruff.format]

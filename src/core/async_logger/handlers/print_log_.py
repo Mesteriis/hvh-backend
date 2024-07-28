@@ -23,7 +23,7 @@ class PrintLog(ABCHandler):
         colorama_init()
         format_ = NAMED_LOG_LEVEL_COLOR[msg.level]
 
-        print(
+        print(  # noqa: T201
             f'{format_.fore or ""}'
             f'{format_.back or ""}'
             f'|x-request-id -> {msg.request_headers.get("x-request-id", None)}'
@@ -40,4 +40,4 @@ class PrintLog(ABCHandler):
 
         if msg.exceptions:
             for el in msg.exceptions:
-                print(el, end="")
+                print(el, end="")  # noqa: T201

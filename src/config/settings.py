@@ -72,5 +72,4 @@ class AppSettings(BaseSettings):
             "docs_url": self.docs_url,
             "redoc_url": self.redoc_url,
             "swagger_ui_oauth2_redirect_url": self.swagger_ui_oauth2_redirect_url,
-            # "servers": [server.model_dump() for server in self.servers],
         }
