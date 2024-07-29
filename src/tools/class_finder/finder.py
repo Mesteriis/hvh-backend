@@ -122,11 +122,12 @@ class ClassFinder:
         for file_path, class_list in classes.items():
             for class_name, bases in class_list:
                 if self.find_sub_class.__name__ in bases:
-                    module_path = os.path.splitext(os.path.relpath(file_path, self.directory))[0].replace(os.sep, ".")  # noqa: PTH122
+                    module_path = str(Path(file_path).relative_to(self.directory).with_suffix("")).replace(os.sep, ".")
                     import_statements.append((module_path, class_name))
         return import_statements
 
-    def dynamic_import(self, import_statements) -> list[str]:
+    @staticmethod
+    def dynamic_import(import_statements) -> list[str]:
         """
         Dynamically imports the specified classes.
 
@@ -136,16 +137,16 @@ class ClassFinder:
         Returns:
             list[str]: A list of import results with success or failure messages.
         """
-        answer = []
+        report = []
         for module_path, class_name in import_statements:
             msg = f"  - {module_path}.{class_name}"
             try:
                 module = importlib.import_module(module_path)
                 _ = getattr(module, class_name)
-                answer.append(f"\033[32m{msg.ljust(50, "."):<50}... OK\033[0m")
+                report.append(f"\033[32m{msg.ljust(50, "."):<50}... OK\033[0m")
             except Exception as e:
-                answer.append(f"\033[31m{msg.ljust(50, "."):<50}... FAIL: {e.__class__.__name__}\033[0m")
-        return answer
+                report.append(f"\033[31m{msg.ljust(50, "."):<50}... FAIL: {e.__name__}\033[0m")
+        return report
 
     def run(self):
         """
