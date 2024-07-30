@@ -145,7 +145,7 @@ class ClassFinder:
                 _ = getattr(module, class_name)
                 report.append(f"\033[32m{msg.ljust(50, "."):<50}... OK\033[0m")
             except Exception as e:
-                report.append(f"\033[31m{msg.ljust(50, "."):<50}... FAIL: {e.__name__}\033[0m")
+                report.append(f"\033[31m{msg.ljust(50, "."):<50}... FAIL \n    {e.__class__.__name__}:\033[0m \033[37m{e}\033[0m")
         return report
 
     def run(self):

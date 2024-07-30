@@ -12,8 +12,10 @@ from tools.class_finder import ClassFinder
 config = context.config
 
 ROOT_PATH = Path(__file__).parent.parent.resolve()
+
 APP_PATH = ROOT_PATH / "src"
 TEST_PATH = ROOT_PATH / "tests"
+
 sys.path.append(str(APP_PATH.absolute()))
 sys.path.append(str(TEST_PATH.absolute()))
 
@@ -31,8 +33,7 @@ config.set_main_option(
 fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
-cf = ClassFinder(APP_PATH, Base)
-cf.run()
+ClassFinder(APP_PATH, Base).run()
 print(f"db_url: {db_url}")  # noqa
 
 
