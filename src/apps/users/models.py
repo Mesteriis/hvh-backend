@@ -6,4 +6,3 @@ from sqlalchemy.orm import relationship
 class User(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "users"
     tasks = relationship("Tasks", back_populates="owner")
-    # owner: Mapped[list["Channel"]] = relationship("Channel", back_populates="channels")
