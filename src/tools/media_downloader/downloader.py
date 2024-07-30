@@ -6,6 +6,7 @@ from yt_dlp import YoutubeDL
 
 from .console_logger import ConsoleLogger
 from .progress_hooks import console_hook
+from .structs import YTChannelInfo, YTVideoInfo, YTPlaylistInfo
 
 
 class UrlUnknownHostError(Exception):
@@ -25,9 +26,11 @@ class Url(str):
         else:
             self.__url = url
 
+
+
     @property
-    def host(self) -> UrlHostEnum:
-        if self.__url.host in ["youtube.com", "youtu.be"]:
+    def source(self) -> UrlHostEnum:
+        if self.__url.host in ["www.youtube.com", "www.youtu.be"]:
             return UrlHostEnum.youtube
         else:
             raise UrlUnknownHostError(f"Unknown host: {self.__url.host}")
@@ -52,8 +55,12 @@ class MediaDownloader:
     _url: Url
     _media_folder: Path
     _client: YoutubeDL
+    _options: dict = None
+    _info_raw: dict
+    _info: YTVideoInfo | YTChannelInfo | YTPlaylistInfo
 
-    def __init__(self, url: AnyHttpUrl | str, media_folder: Path):
+
+    def __init__(self, url: AnyHttpUrl | str, media_folder: Path, options: dict = None):
         """
         Initializes the MediaDownloader with the specified URL, media folder, and logger.
 
@@ -64,6 +71,13 @@ class MediaDownloader:
         self._url = Url(url)
         self._media_folder = media_folder
         self._client = YoutubeDL(self._get_yt_options())
+        self._options = options
+        if self._options and 'outtmpl' not in self._options:
+            self._options['outtmpl'] = f"{self._media_folder}/%(title)s.%(ext)s"
+
+    @property
+    def url(self) -> Url:
+        return self._url
 
     def download(self):
         """
@@ -72,22 +86,35 @@ class MediaDownloader:
 
         self._client.download([self._url])
 
-    def extract_info(self):
+    def extract_info(self) -> YTVideoInfo | YTChannelInfo | YTPlaylistInfo:
         """
         Extracts information from the specified URL.
         """
-        c = self._client
-        return c.extract_info(self._url, download=False)
+        if self._url.source == UrlHostEnum.youtube:
+            struct = None
+            if self._url.is_video:
+                struct = YTVideoInfo
+            elif self._url.is_channel:
+                struct = YTChannelInfo
+            elif self._url.is_playlist:
+                struct = YTPlaylistInfo
+            self._info_raw = self._client.extract_info(self._url, download=False)
+            self._info = struct.model_validate(self._info_raw)
+            return self._info
+
+        raise UrlUnknownHostError(f"Unknown host: {self._url.source}")
 
     def _get_yt_options(self):
         """
         Returns the options for the YouTubeDL client.
         """
+        if self._options:
+            return self._options
         return {
             'format': 'm4a/bestaudio/best',
             'logger': ConsoleLogger(),
             'progress_hooks': [console_hook],
-
+            'outtmpl': f"{self._media_folder}/%(title)s.%(ext)s"
             # # ℹ️ See help(yt_dlp.postprocessor) for a list of available Postprocessors and their arguments
             # 'postprocessors': [{  # Extract audio using ffmpeg
             #     'key': 'FFmpegExtractAudio',
