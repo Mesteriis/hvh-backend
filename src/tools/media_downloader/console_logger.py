@@ -6,8 +6,6 @@ class ConsoleLogger:
 
     @classmethod
     def debug(cls, msg):
-        # For compatibility with youtube-dl, both debug and info are passed into debug
-        # You can distinguish them by the prefix '[debug] '
         if msg.startswith("[debug] "):
             cls.__logger.debug(msg)
         else:

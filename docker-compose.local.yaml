@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   redis:
-    image: redis:6.0.9-alpine
+    image: redis:7-alpine3.20
     container_name: redis-local
     ports:
       - "6379:6379"
@@ -50,14 +50,38 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-#  traefik: # new
-#    image: traefik:v2.9.6
-#    ports:
-#      - "8008:80"
-#      - "8081:8080"
-#    volumes:
-#      - "./traefik.dev.toml:/etc/traefik/traefik.toml"
-#      - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
-#    volumes:
-#      - .:/app
+  worker:
+    build:
+      context: .
+      dockerfile: ./docker/backend/Dockerfile
+    command: celery -A worker.celery worker --loglevel=info --logfile=/logs/celery.log
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    container_name: worker-local
+    volumes:
+      - ./logs:/logs/celery.log
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: ./docker/backend/Dockerfile
+    command: celery --broker=redis://redis:6379/0 flower --port=5555
+    ports:
+      - 5556:5555
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+      - worker
+    container_name: dashboard-local
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5556/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

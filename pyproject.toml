@@ -22,6 +22,10 @@ python-decouple = "^3.8"
 
 fastapi-users = {extras = ["sqlalchemy"], version = "^13.0.0"}
 yt-dlp = "^2024.7.25"
+redis = "^5.0.8"
+aiofiles = "^24.1.0"
+flower = "^2.0.1"
+celery = {extras = ["redis"], version = "^5.4.0"}
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"
@@ -60,6 +64,19 @@ ignore = ["DL3013"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+asyncio_mode = "auto"
+minversion = "6.0"
+pythonpath = "./src"
+python_files = [
+    "tests.py",
+    "test_*.py",
+]
+markers = [
+    "unit",
+    "api",
+    "e2e",
+]
+
 
 [tool.ruff]
 target-version = "py312"

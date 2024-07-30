@@ -5,12 +5,9 @@ from pydantic import AnyHttpUrl
 from yt_dlp import YoutubeDL
 
 from .console_logger import ConsoleLogger
+from .exceptions import UrlUnknownHostError
 from .progress_hooks import console_hook
 from .structs import YTChannelInfo, YTPlaylistInfo, YTVideoInfo
-
-
-class UrlUnknownHostError(Exception):
-    pass
 
 
 class UrlHostEnum(str, Enum):
