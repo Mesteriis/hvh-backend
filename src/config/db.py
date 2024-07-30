@@ -2,12 +2,11 @@ import uuid
 from collections.abc import AsyncGenerator
 from datetime import datetime
 
-from sqlalchemy import DateTime, func, UUID
+from config import get_settings
+from sqlalchemy import UUID, DateTime, func
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
-from sqlalchemy.orm import sessionmaker, Mapped, mapped_column
-
-from config import get_settings
+from sqlalchemy.orm import Mapped, mapped_column, sessionmaker
 
 settings = get_settings()
 

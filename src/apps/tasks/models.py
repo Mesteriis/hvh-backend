@@ -1,9 +1,8 @@
 import uuid
 
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-
 from config.db import Base, BaseModel
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
 class TaskModel(Base, BaseModel):
@@ -12,6 +11,4 @@ class TaskModel(Base, BaseModel):
     url: Mapped[str] = mapped_column(index=True)
     owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
-    owner: Mapped['User'] = relationship("User", back_populates="tasks")
-
-
+    owner: Mapped["User"] = relationship("User", back_populates="tasks")

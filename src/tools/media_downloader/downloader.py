@@ -6,7 +6,7 @@ from yt_dlp import YoutubeDL
 
 from .console_logger import ConsoleLogger
 from .progress_hooks import console_hook
-from .structs import YTChannelInfo, YTVideoInfo, YTPlaylistInfo
+from .structs import YTChannelInfo, YTPlaylistInfo, YTVideoInfo
 
 
 class UrlUnknownHostError(Exception):
@@ -25,8 +25,6 @@ class Url(str):
             self.__url = AnyHttpUrl(url)
         else:
             self.__url = url
-
-
 
     @property
     def source(self) -> UrlHostEnum:
@@ -59,8 +57,7 @@ class MediaDownloader:
     _info_raw: dict
     _info: YTVideoInfo | YTChannelInfo | YTPlaylistInfo
 
-
-    def __init__(self, url: AnyHttpUrl | str, media_folder: Path, options: dict = None):
+    def __init__(self, url: AnyHttpUrl | str, media_folder: Path, options: dict | None = None):
         """
         Initializes the MediaDownloader with the specified URL, media folder, and logger.
 
@@ -72,8 +69,8 @@ class MediaDownloader:
         self._media_folder = media_folder
         self._client = YoutubeDL(self._get_yt_options())
         self._options = options
-        if self._options and 'outtmpl' not in self._options:
-            self._options['outtmpl'] = f"{self._media_folder}/%(title)s.%(ext)s"
+        if self._options and "outtmpl" not in self._options:
+            self._options["outtmpl"] = f"{self._media_folder}/%(title)s.%(ext)s"
 
     @property
     def url(self) -> Url:
@@ -111,13 +108,8 @@ class MediaDownloader:
         if self._options:
             return self._options
         return {
-            'format': 'm4a/bestaudio/best',
-            'logger': ConsoleLogger(),
-            'progress_hooks': [console_hook],
-            'outtmpl': f"{self._media_folder}/%(title)s.%(ext)s"
-            # # ℹ️ See help(yt_dlp.postprocessor) for a list of available Postprocessors and their arguments
-            # 'postprocessors': [{  # Extract audio using ffmpeg
-            #     'key': 'FFmpegExtractAudio',
-            #     'preferredcodec': 'm4a',
-            # }]
+            "format": "m4a/bestaudio/best",
+            "logger": ConsoleLogger(),
+            "progress_hooks": [console_hook],
+            "outtmpl": f"{self._media_folder}/%(title)s.%(ext)s",
         }

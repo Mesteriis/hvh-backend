@@ -5,22 +5,22 @@ class ConsoleLogger:
     __logger = getLogger("MediaDownloader")
 
     @classmethod
-    def debug(self, msg):
+    def debug(cls, msg):
         # For compatibility with youtube-dl, both debug and info are passed into debug
         # You can distinguish them by the prefix '[debug] '
-        if msg.startswith('[debug] '):
-            self.__logger.debug(msg)
+        if msg.startswith("[debug] "):
+            cls.__logger.debug(msg)
         else:
-            self.info(msg)
+            cls.info(msg)
 
     @classmethod
-    def info(self, msg):
-        self.__logger.info(msg)
+    def info(cls, msg):
+        cls.__logger.info(msg)
 
     @classmethod
-    def warning(self, msg):
-        self.__logger.warning(msg)
+    def warning(cls, msg):
+        cls.__logger.warning(msg)
 
     @classmethod
-    def error(self, msg):
-        self.__logger.exception(msg)
+    def error(cls, msg):
+        cls.__logger.exception(msg)
