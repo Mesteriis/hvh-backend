@@ -1,7 +1,7 @@
 import logging
 import uuid
 
-from apps.users.models import User
+from apps.users.models import UserModel
 from config import get_settings
 from fastapi import Request
 from fastapi_users import BaseUserManager, UUIDIDMixin
@@ -17,17 +17,17 @@ SECRET = settings.secret_key
 logger = logging.getLogger(__name__)
 
 
-class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
+class UserManager(UUIDIDMixin, BaseUserManager[UserModel, uuid.UUID]):
     reset_password_token_secret = SECRET
     verification_token_secret = SECRET
 
-    async def on_after_register(self, user: User, request: Request | None = None):  # noqa: ARG002
+    async def on_after_register(self, user: UserModel, request: Request | None = None):  # noqa: ARG002
         logger.info(f"User {user.id} has registered.")
 
-    async def on_after_forgot_password(self, user: User, token: str, request: Request | None = None):  # noqa: ARG002
+    async def on_after_forgot_password(self, user: UserModel, token: str, request: Request | None = None):  # noqa: ARG002
         logger.info(f"User {user.id} has forgot their password. Reset token: {token}")
 
-    async def on_after_request_verify(self, user: User, token: str, request: Request | None = None):  # noqa: ARG002
+    async def on_after_request_verify(self, user: UserModel, token: str, request: Request | None = None):  # noqa: ARG002
         logger.info(f"Verification requested for user {user.id}. Verification token: {token}")
 
 

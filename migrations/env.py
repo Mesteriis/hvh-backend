@@ -34,7 +34,6 @@ fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
 ClassFinder(APP_PATH, Base).run()
-print(f"db_url: {db_url}")  # noqa
 
 
 def run_migrations_offline():

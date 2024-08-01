@@ -30,7 +30,7 @@ class AppSettings(BaseSettings):
     description: str = "FastAPI, Docker, and Traefik"
     version: str = "0.1.0"
 
-    root_path: str = "/api"
+    root_path: str = ""
 
     openapi_url: str = "/openapi.json"
     docs_url: str = "/"
@@ -43,6 +43,8 @@ class AppSettings(BaseSettings):
     radis_uri: RedisDsn = "redis://redis:6379/0"
 
     tg_bot_token: str | None = None
+
+    init_logger: bool = True
 
     cors_allowed_origins: list = [
         "http://localhost:8000",
@@ -73,3 +75,5 @@ class AppSettings(BaseSettings):
             "redoc_url": self.redoc_url,
             "swagger_ui_oauth2_redirect_url": self.swagger_ui_oauth2_redirect_url,
         }
+
+settings = AppSettings()

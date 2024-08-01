@@ -11,4 +11,4 @@ class TaskModel(Base, BaseModel):
     url: Mapped[str] = mapped_column(index=True)
     owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
-    owner: Mapped["User"] = relationship("User", back_populates="tasks")
+    owner: Mapped["UserModel"] = relationship("UserModel", back_populates="tasks")

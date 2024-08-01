@@ -1,7 +1,10 @@
+from apps.tasks.service import TaskSelector
+
+
 class TestTaskSelector:
 
-    def test_get_all(self):
-        assert False
+    def test_get_all(self, alembic_runner):
+        assert TaskSelector.get_all(alembic_runner) == []
 
     def test_get_by_id(self):
         assert False

@@ -4,6 +4,7 @@ services:
   redis:
     image: redis:7-alpine3.20
     container_name: redis-local
+    restart: always
     ports:
       - "6379:6379"
     healthcheck:
@@ -38,6 +39,7 @@ services:
       context: .
       dockerfile: ./docker/backend/Dockerfile
     container_name: backend-local
+    restart: on-failure
     ports:
       - "8000:8000"
     depends_on:
@@ -46,7 +48,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://0.0.0.0:8000/health/root"]
+      test: ["CMD", "curl", "-f", "http://0.0.0.0:8000/api/healthcheck/"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -56,32 +58,40 @@ services:
       context: .
       dockerfile: ./docker/backend/Dockerfile
     command: celery -A worker.celery worker --loglevel=info --logfile=/logs/celery.log
+    restart: on-failure
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     container_name: worker-local
     volumes:
-      - ./logs:/logs/celery.log
+      - ./logs:/logs
     depends_on:
       redis:
         condition: service_healthy
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: celery -b redis://redis:6379/0 inspect ping -d celery@$$HOSTNAME
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   dashboard:
     build:
       context: .
       dockerfile: ./docker/backend/Dockerfile
     command: celery --broker=redis://redis:6379/0 flower --port=5555
+    restart: on-failure
     ports:
       - 5556:5555
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
-      - redis
       - worker
     container_name: dashboard-local
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5556/"]
+      test: ["CMD", "curl", "-f", "http://localhost:5555/"]
       interval: 10s
       timeout: 5s
       retries: 5

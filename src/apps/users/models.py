@@ -1,8 +1,8 @@
 from config.db import Base
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
 
-class User(SQLAlchemyBaseUserTableUUID, Base):
+class UserModel(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "users"
-    tasks = relationship("Tasks", back_populates="owner")
+    tasks: Mapped[list['TaskModel']] = relationship("TaskModel", back_populates="owner")

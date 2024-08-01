@@ -5,10 +5,9 @@ from datetime import datetime
 from config import get_settings
 from sqlalchemy import UUID, DateTime, func
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
-from sqlalchemy.orm import Mapped, mapped_column, sessionmaker
-
-settings = get_settings()
+from sqlalchemy.ext.declarative import DeclarativeMeta
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column, sessionmaker
+from config.settings import settings
 
 engine = create_async_engine(str(settings.db_uri))
 

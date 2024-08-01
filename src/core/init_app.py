@@ -1,6 +1,6 @@
 import logging
 
-from apps.users.api import auth_router
+from api import api_v1_router
 from config.settings import AppSettings
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
@@ -20,21 +20,23 @@ class App(FastAPI):
     def __init__(self):
         self.__settings = self.get_settings()
         super().__init__(**self.__settings.init_settings())
-        self.init_logger()
+        if self.__settings.init_logger:
+            self.init_logger()
         self.register_routers()
         self.register_exceptions()
         self.register_middlewares()
 
     @staticmethod
     def get_settings() -> AppSettings:
-        return AppSettings()
+        from config.settings import settings
+        return settings
 
     def register_routers(self):
-        @self.get("/healthcheck")
+        @self.get("/healthcheck", tags=["healthcheck"])
         def healthcheck():
             return {"status": "ok"}
 
-        self.include_router(auth_router)
+        self.include_router(api_v1_router)
 
     def register_exceptions(self):
         self.add_exception_handler(APIException, on_api_exception)  # noqa: type

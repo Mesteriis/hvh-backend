@@ -3,9 +3,10 @@ from enum import Enum
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from tests.setup.constants import TEST_MEDIA_FOLDER
-from tests.setup.inventory.logging import set_level_logging
-from ..constants import DB_URI_IN_MEMORY, DB_URI_FILE, DB_URI_POSTGRES
+
+from .constants import DB_URI_IN_MEMORY, DB_URI_FILE, DB_URI_POSTGRES
+from .constants import TEST_MEDIA_FOLDER
+from .setup.inventory.logging import set_level_logging
 
 
 class DataBaseTypeInTestEnum(str, Enum):
