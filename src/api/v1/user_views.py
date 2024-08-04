@@ -17,7 +17,7 @@ from applications.users.schemas import (
 )
 from applications.users.tasks import send_new_account_confirmation
 from core.faststream_settings import faststream_broker
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, HTTPException
 from settings.manager import settings
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -28,9 +28,7 @@ logger = logging.getLogger(__name__)
 users_router = APIRouter()
 
 
-@users_router.post(
-    "/register", response_model=JWTPairToken, status_code=201, tags=["users"]
-)
+@users_router.post("/register", response_model=JWTPairToken, status_code=201, tags=["users"])
 async def register(
     *,
     user_in: BaseUserRegister,
@@ -79,9 +77,7 @@ async def register(
         await send_new_account_confirmation.kiq(user_in.email)
 
     await faststream_broker.publish(
-        message=asdict(
-            DeviceIdentification(user_id=str(created_user.pk), device_id=str(device.pk))
-        ),
+        message=asdict(DeviceIdentification(user_id=str(created_user.pk), device_id=str(device.pk))),
         queue=settings.IDENTIFICATION_TOPIC,
     )
 
@@ -89,12 +85,8 @@ async def register(
     return data
 
 
-@users_router.patch(
-    "/me", response_model=BaseRetrieveUser, status_code=200, tags=["users"]
-)
-async def update_user_me(
-    user_data: BaseUserUpdate, current_user: User = Depends(get_current_active_user)
-):
+@users_router.patch("/me", response_model=BaseRetrieveUser, status_code=200, tags=["users"])
+async def update_user_me(user_data: BaseUserUpdate, current_user: User = Depends(get_current_active_user)):
     """
     Update own user.
     """
@@ -109,9 +101,7 @@ async def resend_verification_email_link(
     return {}
 
 
-@users_router.get(
-    "/me", response_model=BaseRetrieveUser, status_code=200, tags=["users"]
-)
+@users_router.get("/me", response_model=BaseRetrieveUser, status_code=200, tags=["users"])
 async def read_user_me(
     request: Request,
     current_user: User = Depends(get_current_active_user),
@@ -123,33 +113,3 @@ async def read_user_me(
     if user_struct.avatar:
         user_struct.avatar = urljoin(str(request.base_url), str(user_struct.avatar))
     return user_struct
-
-
-@users_router.post(
-    "/avatar", status_code=201, tags=["users"], response_model=BaseRetrieveUser
-)
-async def upload_avatar(
-    avatar: UploadFile,
-    request: Request,
-    current_user: User = Depends(get_current_active_user),
-):
-    """
-    Upload avatar.
-    """
-    if current_user.avatar:
-        try:
-            current_user.avatar.delete()
-        except Exception as e:
-            logger.error(f"Error while deleting old avatar file: {e}")
-    try:
-        current_user.avatar = avatar
-        await current_user.save(update_fields=["avatar"])
-        await current_user.refresh_from_db(["avatar"])
-        user = BaseRetrieveUser.model_validate(current_user)
-        user.avatar = urljoin(str(request.base_url), str(current_user.avatar.path))
-        return user
-    except Exception as e:
-        logger.error(f"Error while uploading avatar: {e}")
-        raise HTTPException(
-            status_code=400, detail=f"Error while uploading avatar: {e}"
-        )

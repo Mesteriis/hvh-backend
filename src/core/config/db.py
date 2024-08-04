@@ -3,14 +3,15 @@ from __future__ import annotations
 import uuid
 from collections.abc import AsyncGenerator
 
-from sqlalchemy import UUID, DateTime, func, Column, select
+from sqlalchemy import UUID, Column, DateTime, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import sessionmaker, declared_attr, declarative_base, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, declarative_base, declared_attr, mapped_column, sessionmaker
 
 
 def get_uri() -> str:
     from core.config import settings
+
     return str(settings.db_uri)
 
 
@@ -133,7 +134,6 @@ class BaseModel(Base):
 
     class MultipleObjectsReturned(Exception):
         pass
-
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=lambda: uuid.uuid4())
 

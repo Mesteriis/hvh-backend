@@ -55,9 +55,7 @@ class PBKDF2SHA256PasswordHasher(BasePasswordHasher):
 hasher = PBKDF2SHA256PasswordHasher()
 
 
-def verify_and_update_password(
-    plain_password: str, hashed_password: str
-) -> tuple[bool, str]:
+def verify_and_update_password(plain_password: str, hashed_password: str) -> tuple[bool, str]:
     """
     Verifies the password by comparing it with the hash and returns whether the hash needs to be updated.
     """

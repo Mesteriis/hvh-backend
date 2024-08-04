@@ -16,11 +16,7 @@ async def recover_password(email: str):
     return {}
 
 
-@password_api_router.post(
-    "/reset-password/", status_code=200, tags=["users"], response_model=MsgSchema
-)
+@password_api_router.post("/reset-password/", status_code=200, tags=["users"], response_model=MsgSchema)
 async def post_reset_password(payload: ResetPasswordSchema):
     await PasswordInteractor().reset_password(payload=payload)
-    return JSONResponse(
-        status_code=200, content={"message": "Password updated successfully"}
-    )
+    return JSONResponse(status_code=200, content={"message": "Password updated successfully"})

@@ -1,18 +1,17 @@
 import uuid
 
-from fastapi import APIRouter, Depends
-
-from apps.tasks.service import TaskSelector, TaskInteractor
-from apps.tasks.structs import TaskResponse, TaskCreate
+from apps.tasks.service import TaskInteractor, TaskSelector
+from apps.tasks.structs import TaskCreate, TaskResponse
 from apps.users.auth.depens import current_user
 from apps.users.models import UserModel
+from fastapi import APIRouter, Depends
 
 tasks_router = APIRouter(tags=["tasks"])
 
 
 @tasks_router.get("/", response_model=list[TaskResponse])
 async def get_list_tasks(
-        user: UserModel = Depends(current_user),
+    user: UserModel = Depends(current_user),
 ):
     if user.is_superuser:
         return await TaskSelector.get_all()
@@ -22,8 +21,8 @@ async def get_list_tasks(
 
 @tasks_router.post("/", response_model=TaskResponse)
 async def create_task(
-        data: TaskCreate,
-        user: UserModel = Depends(current_user),
+    data: TaskCreate,
+    user: UserModel = Depends(current_user),
 ):
     data.owner_id = user.id
     return await TaskInteractor.create(data)
@@ -31,8 +30,8 @@ async def create_task(
 
 @tasks_router.get("/{task_id}", response_model=TaskResponse)
 async def get_task(
-        task_id: uuid.UUID,
-        user: UserModel = Depends(current_user),
+    task_id: uuid.UUID,
+    user: UserModel = Depends(current_user),
 ):
     if user.is_superuser:
         return await TaskSelector.get_by_id(task_id)

@@ -140,6 +140,9 @@ ignore = [
     "EM101", # Exception must not use a string literal, assign to variable first
     "TRY401", # Redundant exception object included in `logging.exception` call
     "N805", # First argument of a method should be named `self`
+    "SIM118", # Use `key in dict` instead of `key in dict.keys()
+    "SIM108", # Use ternary operator  instead of `if`-`else`-block
+
 
 ]
 

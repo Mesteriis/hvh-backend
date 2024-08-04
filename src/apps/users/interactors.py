@@ -1,10 +1,11 @@
-from fastapi import HTTPException
-
 from apps.users.auth.utils.contrib import verify_password_reset_token
 from apps.users.models import UserModel
 from apps.users.schemas import BaseUserUpdate, ResetPasswordSchema
+from fastapi import HTTPException
+
 from .auth.utils.password import get_password_hash
 from .selectors import UserSelector
+
 
 class UserInteractor:
     def __init__(self, user: UserModel):
@@ -26,9 +27,7 @@ class UserInteractor:
         return self.user
 
 
-
 class PasswordInteractor:
-
     async def reset_password(self, payload: ResetPasswordSchema) -> None:
         reset_token = payload.reset_token
         email = verify_password_reset_token(reset_token)

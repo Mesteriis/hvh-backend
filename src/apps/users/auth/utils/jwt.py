@@ -1,22 +1,22 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import jwt
-from fastapi import HTTPException
-from jwt import InvalidAlgorithmError, InvalidTokenError
-
 from apps.users.auth.dataclasses import AccessToken, RefreshToken
 from apps.users.models import UserModel
 from core.config import settings
+from fastapi import HTTPException
+from jwt import InvalidAlgorithmError, InvalidTokenError
+from pytz import utc
 
 ALGORITHM = settings.jwt_algorithm
-access_token_jwt_type = "access"
-refresh_token_jwt_type = "refresh"
+access_token_jwt_type = "access"  # noqa: S105
+refresh_token_jwt_type = "refresh"  # noqa: S105
 
 
-def create_access_token(*, data: dict, expires_delta: timedelta = None) -> AccessToken:
+def create_access_token(*, data: dict, expires_delta: timedelta | None = None) -> AccessToken:
     to_encode = data.copy()
-    now = datetime.utcnow()
+    now = datetime.now(tz=utc)
 
     if expires_delta:
         expire = now + expires_delta
@@ -32,11 +32,9 @@ def create_access_token(*, data: dict, expires_delta: timedelta = None) -> Acces
     return token
 
 
-def create_refresh_token(
-    *, data: dict, expires_delta: timedelta = None
-) -> RefreshToken:
+def create_refresh_token(*, data: dict, expires_delta: timedelta | None = None) -> RefreshToken:
     to_encode = data.copy()
-    now = datetime.utcnow()
+    now = datetime.now(tz=UTC)
 
     if expires_delta is not None:
         expire = now + expires_delta
@@ -52,7 +50,7 @@ def create_refresh_token(
     return token
 
 
-def decode_jwt(token: str, verify: bool = True) -> dict[str, Any]:
+def decode_jwt(token: str, _: bool = True) -> dict[str, Any]:
     """
     Performs a validation of the given token and returns its payload
     dictionary.
@@ -61,29 +59,19 @@ def decode_jwt(token: str, verify: bool = True) -> dict[str, Any]:
     signature check fails, or if its 'exp' claim indicates it has expired.
     """
     try:
-        return jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
-        )
+        return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
     except InvalidAlgorithmError as ex:
-        raise HTTPException(
-            status_code=400, detail="Invalid algorithm specified"
-        ) from ex
+        raise HTTPException(status_code=400, detail="Invalid algorithm specified") from ex
     except InvalidTokenError as ex:
-        raise HTTPException(
-            status_code=400, detail="Token is invalid or expired"
-        ) from ex
+        raise HTTPException(status_code=400, detail="Token is invalid or expired") from ex
 
 
 def get_jwt_pair_from_user(user: UserModel) -> dict[str, Any]:
     access_token_expires = timedelta(minutes=settings.jwt_access_token_expire_minutes)
     refresh_token_expires = timedelta(minutes=settings.jwt_refresh_token_expire_minutes)
 
-    access_token = create_access_token(
-        data={"user_id": str(user.id)}, expires_delta=access_token_expires
-    )
-    refresh_token = create_refresh_token(
-        data={"user_id": str(user.id)}, expires_delta=refresh_token_expires
-    )
+    access_token = create_access_token(data={"user_id": str(user.id)}, expires_delta=access_token_expires)
+    refresh_token = create_refresh_token(data={"user_id": str(user.id)}, expires_delta=refresh_token_expires)
     return {
         "access": access_token.encoded_jwt,
         "access_expiration_at": access_token.exp,
@@ -105,12 +93,8 @@ def get_jwt_pair_with_userid_from_refresh_token(refresh_token: str) -> dict[str,
     access_token_expires = timedelta(minutes=settings.jwt_access_token_expire_minutes)
     refresh_token_expires = timedelta(minutes=settings.jwt_refresh_token_expire_minutes)
 
-    access_token = create_access_token(
-        data={"user_id": user_id}, expires_delta=access_token_expires
-    )
-    refresh_token = create_refresh_token(
-        data={"user_id": user_id}, expires_delta=refresh_token_expires
-    )
+    access_token = create_access_token(data={"user_id": user_id}, expires_delta=access_token_expires)
+    refresh_token = create_refresh_token(data={"user_id": user_id}, expires_delta=refresh_token_expires)
 
     return {
         "access": access_token.encoded_jwt,
