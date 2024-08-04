@@ -1,44 +1,41 @@
 import uuid
 
-from sqlalchemy import select, delete
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from apps.tasks.models import TaskModel
-from apps.tasks.structs import TaskInDB
-# from apps.users.models import UserModel
+from apps.tasks.structs import TaskInDB, Task
 
 
 class TaskSelector:
     @classmethod
-    async def get_by_id(cls, task_id: int, db: AsyncSession) -> TaskInDB:
+    async def get_by_id(cls, task_id: uuid.UUID) -> TaskInDB:
         return TaskInDB.model_validate(
-            await db.execute(
-                select(TaskModel).where(TaskModel.id == task_id).first()
-            )
+            await TaskModel.objects.get(pk=task_id)
         )
 
     @classmethod
-    async def get_all(cls, db: AsyncSession) -> list[TaskInDB]:
-        query = select(TaskModel)
-        result = await db.execute(query)
-        tasks = result.scalars().all()
+    async def get_by_id_and_owner(cls, task_id: uuid.UUID, owner_id: uuid.UUID) -> TaskInDB:
+        return TaskInDB.model_validate(
+            await TaskModel.objects.get(pk=task_id, owner_id=owner_id)
+        )
+
+    @classmethod
+    async def get_all(cls) -> list[TaskInDB]:
+        tasks = await TaskModel.objects.all()
+        return [TaskInDB.model_validate(task) for task in tasks]
+
+    @classmethod
+    async def get_by_owner(cls, owner_id: uuid.UUID) -> list[TaskInDB]:
+        tasks = await TaskModel.objects.filter(owner_id=owner_id)
         return [TaskInDB.model_validate(task) for task in tasks]
 
 
 class TaskInteractor:
     @classmethod
-    async def create(cls, url: str, db: AsyncSession, user) -> TaskInDB:
-        task = TaskModel(
-            url=url,
-            owner_id=user.id
-        )
-        db.add(task)
-        await db.commit()
-        await db.refresh(task)
+    async def create(cls, data: Task) -> TaskInDB:
+        data = data.model_dump()
+        task = await TaskModel.objects.create(url=str(data['url']), owner_id=data['owner_id'])
         return TaskInDB.model_validate(task)
 
     @classmethod
-    async def delete(cls, task_pk: uuid.UUID, db: AsyncSession) -> None:
-        query = delete(TaskModel).where(TaskModel.id == task_pk)
-        await db.execute(query)
-        await db.commit()
+    async def delete(cls, task_pk: uuid.UUID) -> None:
+        task = await TaskModel.objects.get(pk=task_pk)
+        await task.delete()

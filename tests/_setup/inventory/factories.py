@@ -1,4 +1,5 @@
 import factory
+import pytest
 from async_factory_boy.factory.sqlalchemy import AsyncSQLAlchemyFactory
 from factory import Faker as RawFaker, LazyAttribute
 from faker import Faker
@@ -9,6 +10,7 @@ from apps.users.models import UserModel
 from tests.conftest import AsyncSessionLocal
 
 faker = Faker("en_US")
+
 
 class CustomSQLAlchemyOptions(AsyncSQLAlchemyFactory):
     @classmethod
@@ -28,9 +30,12 @@ class UserModelFactory(CustomSQLAlchemyOptions):
     last_login = faker.date_time_this_year()
     date_joined = faker.date_time_this_year()
 
-
     class Meta:
         model = UserModel
+
+@pytest.fixture(scope="function")
+def user_factory() -> type[UserModelFactory]:
+    return UserModelFactory
 
 
 class TaskModelFactory(CustomSQLAlchemyOptions):
@@ -39,3 +44,8 @@ class TaskModelFactory(CustomSQLAlchemyOptions):
 
     class Meta:
         model = TaskModel
+
+
+@pytest.fixture(scope="function")
+def task_factory() -> type[TaskModelFactory]:
+    return TaskModelFactory

@@ -1,5 +1,5 @@
 import jwt
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
 from fastapi import Security
 from jwt import PyJWTError
 from starlette.status import HTTP_403_FORBIDDEN
@@ -20,18 +20,12 @@ async def current_user(token: str = Security(reusable_oauth2)) -> UserModel | No
         raise HTTPException(
             status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials"
         )
-    return await UserSelector.get_user_by_uid(token_data.user_id)
-
-
-async def current_active_user(cur_user: UserModel = Security(current_user)):
-    if not cur_user.is_active:
+    user = await UserSelector.get_user_by_uid(token_data.user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.is_active is False:
         raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
+    return user
 
 
-async def current_superuser(cur_user: UserModel = Security(current_user)):
-    if not cur_user.is_superuser:
-        raise HTTPException(
-            status_code=400, detail="The user doesn't have enough privileges"
-        )
-    return current_user
+

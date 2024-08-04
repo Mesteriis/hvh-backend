@@ -31,7 +31,7 @@ class AsyncApiTestClient(AsyncClient):
         if user and email:
             raise ValueError("You can't provide both user and email")
         if email:
-            self.auth_user = await UserModel.get(email=email)
+            self.auth_user = await UserModel.objects.get(email=email)
         else:
             self.auth_user = user or await self._generate_user(
                 is_superuser=is_superuser,
@@ -47,9 +47,6 @@ class AsyncApiTestClient(AsyncClient):
             self.auth_user.is_superuser = is_superuser
             update_fields.append("is_superuser")
 
-        if update_fields:
-            await self.auth_user.save(update_fields=update_fields)
-
         data = get_jwt_pair_from_user(self.auth_user)
 
         self.headers.update({"Authorization": f"Bearer {data['access']}"})
@@ -62,7 +59,6 @@ class AsyncApiTestClient(AsyncClient):
         from tests._setup.inventory.factories import UserModelFactory
         user = await UserModelFactory.create(
             is_active=is_active,
-            is_email_verified=is_email_verified,
             is_superuser=is_superuser,
         )
         return user

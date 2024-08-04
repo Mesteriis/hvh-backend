@@ -134,6 +134,7 @@ class BaseModel(Base):
     class MultipleObjectsReturned(Exception):
         pass
 
+
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=lambda: uuid.uuid4())
 
     @declared_attr
