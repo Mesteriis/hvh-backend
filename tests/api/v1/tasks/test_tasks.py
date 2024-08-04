@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from tests.setup.inventory.factories import UserModelFactory, TaskModelFactory
+from tests._setup.inventory.factories import UserModelFactory, TaskModelFactory
 
 pytestmark = pytest.mark.api
 

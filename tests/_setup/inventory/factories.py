@@ -1,11 +1,14 @@
 import factory
 from async_factory_boy.factory.sqlalchemy import AsyncSQLAlchemyFactory
+from factory import Faker as RawFaker, LazyAttribute
+from faker import Faker
 from fastapi_users.password import PasswordHelper
 
 from apps.tasks.models import TaskModel
 from apps.users.models import UserModel
 from tests.conftest import AsyncSessionLocal
 
+faker = Faker("en_US")
 
 class CustomSQLAlchemyOptions(AsyncSQLAlchemyFactory):
     @classmethod
@@ -16,11 +19,15 @@ class CustomSQLAlchemyOptions(AsyncSQLAlchemyFactory):
 
 
 class UserModelFactory(CustomSQLAlchemyOptions):
-    email = factory.Sequence(lambda n: f"test_user_{n}@test.com")
+    email = LazyAttribute(lambda a: f"{a.first_name}.{a.last_name}@test.com".lower())
     hashed_password = factory.Sequence(lambda n: PasswordHelper().password_hash.hash(f"test_user_{n}@test.com"))
+    first_name = RawFaker("first_name")
+    last_name = RawFaker("last_name")
     is_active = True
     is_superuser = False
-    is_verified = True
+    last_login = faker.date_time_this_year()
+    date_joined = faker.date_time_this_year()
+
 
     class Meta:
         model = UserModel

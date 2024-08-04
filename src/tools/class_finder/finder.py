@@ -5,7 +5,7 @@ import logging.config
 import os
 import sys
 from pathlib import Path
-from typing import LiteralString
+from typing import Any
 
 
 class ClassFinder:
@@ -37,13 +37,13 @@ class ClassFinder:
         },
     }
 
-    def __init__(self, directory: Path, find_sub_class: object, work_dir: Path | None = None):
+    def __init__(self, directory: Path, find_sub_class: type, work_dir: Path | None = None):
         """
         Initializes the ClassFinder with the specified directory and optional working directory.
 
         Args:
             directory (Path): The directory to search for Python files.
-            find_sub_class (object): The class to find in the specified directory.
+            find_sub_class (type): The class to find in the specified directory.
             work_dir (Path, optional): The working directory to add to sys.path. Defaults to None.
 
 
@@ -58,12 +58,12 @@ class ClassFinder:
         self.directory = directory
         self.logger = self.setup_logger()
 
-    def find_python_files(self) -> list[LiteralString | str | bytes]:
+    def find_python_files(self) -> list[str]:
         """
         Recursively finds all Python files in the specified directory.
 
         Returns:
-            list[LiteralString | str | bytes]: A list of paths to Python files.
+            list[str]: A list of paths to Python files.
         """
         python_files = []
         for root, _, files in os.walk(self.directory):
@@ -72,33 +72,39 @@ class ClassFinder:
                     python_files.append(os.path.join(root, file))  # noqa: PTH118
         return python_files
 
-    def find_classes_in_file(self, file_path) -> list[tuple[str, list[str]]]:
+    def find_classes_in_file(self, file_path: str) -> list[str]:
         """
-        Finds all classes in the specified Python file and checks their parent classes.
+        Finds all classes in the specified Python file by importing and checking inheritance.
 
         Args:
             file_path (str): The path to the Python file.
 
         Returns:
-            list[tuple[str, list[str]]]: A list of tuples containing class names and their base classes.
+            list[str]: A list of class names that inherit from the specified base class.
         """
-        with open(file_path, encoding="utf-8") as file:  # noqa: PTH123
-            tree = ast.parse(file.read(), filename=file_path)
+        module_path = str(Path(file_path).relative_to(self.directory).with_suffix("")).replace(os.sep, ".")
+        if 'models' not in module_path:
+            return []
+        try:
+            module = importlib.import_module(module_path)
+        except (ModuleNotFoundError, ImportError):
+            self.logger.warning(f"Module not found: {module_path}")
+            return []
 
         classes = []
-        for node in ast.walk(tree):
-            if isinstance(node, ast.ClassDef):
-                bases = [base.id for base in node.bases if isinstance(base, ast.Name)]
-                classes.append((node.name, bases))
+        for attr_name in dir(module):
+            attr = getattr(module, attr_name)
+            if isinstance(attr, type) and issubclass(attr, self.find_sub_class) and attr is not self.find_sub_class:
+                classes.append(attr_name)
 
         return classes
 
-    def find_all_classes(self) -> dict[str : list[tuple[str, list[str]]]]:
+    def find_all_classes(self) -> dict[str, list[str]]:
         """
-        Finds all classes in Python files in the specified directory and checks their parent classes.
+        Finds all classes in Python files in the specified directory and checks their inheritance.
 
         Returns:
-            dict[str: list[tuple[str, list[str]]]]: A dictionary with file paths as keys and lists of class tuples as values.
+            dict[str, list[str]]: A dictionary with file paths as keys and lists of class names as values.
         """
         python_files = self.find_python_files()
         all_classes = {}
@@ -108,26 +114,25 @@ class ClassFinder:
                 all_classes[file_path] = classes
         return all_classes
 
-    def generate_import_statements(self, classes) -> list[tuple[str, str]]:
+    def generate_import_statements(self, classes: dict[str, list[str]]) -> list[tuple[str, str]]:
         """
-        Generates import statements for classes inherited from Base.
+        Generates import statements for classes inherited from the specified base class.
 
         Args:
-            classes (dict[str: list[tuple[str, list[str]]]]): A dictionary with file paths as keys and lists of class tuples as values.
+            classes (dict[str, list[str]]): A dictionary with file paths as keys and lists of class names as values.
 
         Returns:
             list[tuple[str, str]]: A list of tuples containing module paths and class names.
         """
         import_statements = []
         for file_path, class_list in classes.items():
-            for class_name, bases in class_list:
-                if self.find_sub_class.__name__ in bases:
-                    module_path = str(Path(file_path).relative_to(self.directory).with_suffix("")).replace(os.sep, ".")
-                    import_statements.append((module_path, class_name))
+            module_path = str(Path(file_path).relative_to(self.directory).with_suffix("")).replace(os.sep, ".")
+            for class_name in class_list:
+                import_statements.append((module_path, class_name))
         return import_statements
 
     @staticmethod
-    def dynamic_import(import_statements) -> list[str]:
+    def dynamic_import(import_statements: list[tuple[str, str]]) -> list[str]:
         """
         Dynamically imports the specified classes.
 
@@ -143,10 +148,10 @@ class ClassFinder:
             try:
                 module = importlib.import_module(module_path)
                 _ = getattr(module, class_name)
-                report.append(f"\033[32m{msg.ljust(50, "."):<50}... OK\033[0m")
+                report.append(f"\033[32m{msg.ljust(50, '.')}... OK\033[0m")
             except Exception as e:
                 report.append(
-                    f"\033[31m{msg.ljust(50, "."):<50}... FAIL \n    {e.__class__.__name__}:\033[0m \033[37m{e}\033[0m"
+                    f"\033[31m{msg.ljust(50, '.')}... FAIL \n    {e.__class__.__name__}:\033[0m \033[37m{e}\033[0m"
                 )
         return report
 
@@ -158,8 +163,8 @@ class ClassFinder:
         for file_path, class_list in classes.items():
             msg = f"\033[37mFile: {file_path}\033[0m"
             self.logger.debug(msg)
-            for class_name, bases in class_list:
-                msg = f"  Class: {class_name}, Parents classes: {bases}"
+            for class_name in class_list:
+                msg = f"  Class: {class_name}, Inherits from: {self.find_sub_class.__name__}"
                 self.logger.debug(msg)
 
         imports = self.generate_import_statements(classes)
@@ -171,7 +176,7 @@ class ClassFinder:
         logger_msg.append("\033[37mDynamic import finished.\033[0m")
         self.logger.info("\n".join(logger_msg))
 
-    def setup_logger(self):
+    def setup_logger(self) -> logging.Logger:
         """
         Sets up the logger for the ClassFinder.
 

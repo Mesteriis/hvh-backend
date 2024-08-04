@@ -1,11 +1,12 @@
 import uuid
 
-from config.db import Base, BaseModel
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from core.config.db import BaseModel
 
-class YTChannel(Base, BaseModel):
+
+class YTChannel(BaseModel):
     __tablename__ = "channels"
 
     owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
@@ -15,7 +16,7 @@ class YTChannel(Base, BaseModel):
     task: Mapped["TaskModel"] = relationship("TaskModel", back_populates=None)
 
 
-class YTPlaylist(Base, BaseModel):
+class YTPlaylist(BaseModel):
     __tablename__ = "playlists"
 
     owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
@@ -25,7 +26,7 @@ class YTPlaylist(Base, BaseModel):
     task: Mapped["TaskModel"] = relationship("TaskModel", back_populates=None)
 
 
-class YTVideo(Base, BaseModel):
+class YTVideo(BaseModel):
     __tablename__ = "videos"
 
     owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))

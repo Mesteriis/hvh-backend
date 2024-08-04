@@ -1,11 +1,13 @@
 import uuid
 
-from config.db import Base, BaseModel
+
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from core.config.db import BaseModel
 
-class TaskModel(Base, BaseModel):
+
+class TaskModel(BaseModel):
     __tablename__ = "tasks"
 
     url: Mapped[str] = mapped_column(index=True)

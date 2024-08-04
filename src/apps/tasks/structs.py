@@ -18,10 +18,6 @@ class TaskInDB(Task):
 class TaskCreate(Task):
     owner_id: None = None
 
-class TaskUpdate(Task):
-    owner_id: None = None
-    url: None = None
-
 class TaskResponse(TaskInDB):
     pass
 

@@ -1,7 +1,7 @@
 import logging
 
-from api import api_v1_router
-from config.settings import AppSettings
+from api import api_router
+from core.config import AppSettings
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError
@@ -28,7 +28,7 @@ class App(FastAPI):
 
     @staticmethod
     def get_settings() -> AppSettings:
-        from config.settings import settings
+        from core.config import settings
         return settings
 
     def register_routers(self):
@@ -36,7 +36,7 @@ class App(FastAPI):
         def healthcheck():
             return {"status": "ok"}
 
-        self.include_router(api_v1_router)
+        self.include_router(api_router)
 
     def register_exceptions(self):
         self.add_exception_handler(APIException, on_api_exception)  # noqa: type

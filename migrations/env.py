@@ -7,6 +7,7 @@ from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
 
+from core.config.db import BaseModel
 from tools.class_finder import ClassFinder
 
 config = context.config
@@ -19,7 +20,9 @@ TEST_PATH = ROOT_PATH / "tests"
 sys.path.append(str(APP_PATH.absolute()))
 sys.path.append(str(TEST_PATH.absolute()))
 
-from config.db import Base, settings  # noqa
+from core.config.db import Base  # noqa
+from core.config import settings  # noqa
+
 
 db_url = os.environ.get(
     "DATABASE_URL",
@@ -33,7 +36,7 @@ config.set_main_option(
 fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
-ClassFinder(APP_PATH, Base).run()
+ClassFinder(APP_PATH, BaseModel).run()
 
 
 def run_migrations_offline():

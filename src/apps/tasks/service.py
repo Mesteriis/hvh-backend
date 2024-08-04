@@ -4,13 +4,18 @@ from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.tasks.models import TaskModel
-from apps.tasks.structs import TaskInDB, TaskCreate, TaskUpdate
+from apps.tasks.structs import TaskInDB
+# from apps.users.models import UserModel
 
 
 class TaskSelector:
     @classmethod
     async def get_by_id(cls, task_id: int, db: AsyncSession) -> TaskInDB:
-        return TaskInDB.model_validate(await db.execute(select(TaskModel).where(TaskModel.id == task_id).first()))
+        return TaskInDB.model_validate(
+            await db.execute(
+                select(TaskModel).where(TaskModel.id == task_id).first()
+            )
+        )
 
     @classmethod
     async def get_all(cls, db: AsyncSession) -> list[TaskInDB]:
