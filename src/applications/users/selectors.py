@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from apps.users.models import UserModel
+from applications.users.models import UserModel
 from fastapi import HTTPException
 
 

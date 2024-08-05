@@ -1,8 +1,8 @@
 from sqlalchemy import select
 
-from apps.tasks.models import TaskModel
-from apps.tasks.service import TaskSelector, TaskInteractor
-from apps.tasks.structs import Task
+from applications.tasks.models import TaskModel
+from applications.tasks.service import TaskSelector, TaskInteractor
+from applications.tasks.structs import Task
 
 
 class TestTaskSelector:

@@ -4,8 +4,8 @@ from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlalchemy.orm import Session
 
-from apps.users.auth.utils.jwt import get_jwt_pair_from_user
-from apps.users.models import UserModel
+from applications.users.auth.utils.jwt import get_jwt_pair_from_user
+from applications.users.models import UserModel
 
 
 

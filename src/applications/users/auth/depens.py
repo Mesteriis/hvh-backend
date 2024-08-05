@@ -1,9 +1,9 @@
 import jwt
-from apps.users.auth.schemas import JWTTokenPayload
-from apps.users.auth.utils.contrib import reusable_oauth2
-from apps.users.auth.utils.jwt import ALGORITHM
-from apps.users.models import UserModel
-from apps.users.selectors import UserSelector
+from applications.users.auth.schemas import JWTTokenPayload
+from applications.users.auth.utils.contrib import reusable_oauth2
+from applications.users.auth.utils.jwt import ALGORITHM
+from applications.users.models import UserModel
+from applications.users.selectors import UserSelector
 from core.config import settings
 from fastapi import HTTPException, Security
 from jwt import PyJWTError

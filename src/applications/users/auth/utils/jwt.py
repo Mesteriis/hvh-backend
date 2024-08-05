@@ -2,8 +2,8 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import jwt
-from apps.users.auth.dataclasses import AccessToken, RefreshToken
-from apps.users.models import UserModel
+from applications.users.auth.dataclasses import AccessToken, RefreshToken
+from applications.users.models import UserModel
 from core.config import settings
 from fastapi import HTTPException
 from jwt import InvalidAlgorithmError, InvalidTokenError

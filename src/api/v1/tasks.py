@@ -1,9 +1,9 @@
 import uuid
 
-from apps.tasks.service import TaskInteractor, TaskSelector
-from apps.tasks.structs import TaskCreate, TaskResponse
-from apps.users.auth.depens import current_user
-from apps.users.models import UserModel
+from applications.tasks.service import TaskInteractor, TaskSelector
+from applications.tasks.structs import TaskCreate, TaskResponse
+from applications.users.auth.depens import current_user
+from applications.users.models import UserModel
 from fastapi import APIRouter, Depends
 
 tasks_router = APIRouter(tags=["tasks"])

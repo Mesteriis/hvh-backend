@@ -1,6 +1,6 @@
-from apps.users.auth.utils.contrib import verify_password_reset_token
-from apps.users.models import UserModel
-from apps.users.schemas import BaseUserUpdate, ResetPasswordSchema
+from applications.users.auth.utils.contrib import verify_password_reset_token
+from applications.users.models import UserModel
+from applications.users.schemas import BaseUserUpdate, ResetPasswordSchema
 from fastapi import HTTPException
 
 from .auth.utils.password import get_password_hash

@@ -5,8 +5,8 @@ from factory import Faker as RawFaker, LazyAttribute
 from faker import Faker
 from fastapi_users.password import PasswordHelper
 
-from apps.tasks.models import TaskModel
-from apps.users.models import UserModel
+from applications.tasks.models import TaskModel
+from applications.users.models import UserModel
 from tests.conftest import AsyncSessionLocal
 
 faker = Faker("en_US")

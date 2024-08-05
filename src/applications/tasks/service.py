@@ -1,7 +1,7 @@
 import uuid
 
-from apps.tasks.models import TaskModel
-from apps.tasks.structs import Task, TaskInDB
+from applications.tasks.models import TaskModel
+from applications.tasks.structs import Task, TaskInDB
 
 
 class TaskSelector:

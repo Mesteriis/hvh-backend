@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 
 import jwt
-from apps.users.auth.schemas import CredentialsSchema
-from apps.users.auth.utils.password import verify_and_update_password
-from apps.users.models import UserModel
-from apps.users.selectors import UserSelector
+from applications.users.auth.schemas import CredentialsSchema
+from applications.users.auth.utils.password import verify_and_update_password
+from applications.users.models import UserModel
+from applications.users.selectors import UserSelector
 from core.config import settings
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError

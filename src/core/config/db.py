@@ -126,7 +126,7 @@ class BaseManager:
 
 
 class BaseModel(Base):
-    __abstract__ = True  # Это делает BaseModel абстрактным, предотвращая создание таблицы
+    __abstract__ = True
     __table_args__ = {"extend_existing": True}
 
     class NotFoundError(Exception):
