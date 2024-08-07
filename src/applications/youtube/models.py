@@ -1,8 +1,12 @@
 import uuid
+from enum import Enum
+
+from sqlalchemy import Enum as SqlEnum
+from sqlalchemy import ForeignKey, JSON
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.config.db import BaseModel
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from .enums import StatusEnum
 
 
 class YTChannel(BaseModel):
@@ -14,6 +18,9 @@ class YTChannel(BaseModel):
     task_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("tasks.id", ondelete="CASCADE"))
     task: Mapped["TaskModel"] = relationship("TaskModel", back_populates=None)
 
+    meta_data: Mapped[dict] = mapped_column(JSON, nullable=True)
+    status: Mapped[Enum] = mapped_column(SqlEnum(StatusEnum), default=StatusEnum.new, index=True)
+    ext_id: Mapped[str] = mapped_column(index=True, unique=True)
 
 class YTPlaylist(BaseModel):
     __tablename__ = "playlists"
@@ -24,7 +31,9 @@ class YTPlaylist(BaseModel):
     task_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("tasks.id", ondelete="CASCADE"))
     task: Mapped["TaskModel"] = relationship("TaskModel", back_populates=None)
 
-
+    meta_data: Mapped[dict] = mapped_column(JSON, nullable=True)
+    status: Mapped[Enum] = mapped_column(SqlEnum(StatusEnum), default=StatusEnum.new, index=True)
+    ext_id: Mapped[str] = mapped_column(index=True, unique=True)
 class YTVideo(BaseModel):
     __tablename__ = "videos"
 
@@ -33,3 +42,7 @@ class YTVideo(BaseModel):
 
     task_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("tasks.id", ondelete="CASCADE"))
     task: Mapped["TaskModel"] = relationship("TaskModel", back_populates=None)
+
+    meta_data: Mapped[dict] = mapped_column(JSON, nullable=True)
+    status: Mapped[Enum] = mapped_column(SqlEnum(StatusEnum), default=StatusEnum.new, index=True)
+    ext_id: Mapped[str] = mapped_column(index=True, unique=True)
