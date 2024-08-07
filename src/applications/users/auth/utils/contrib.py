@@ -1,27 +1,23 @@
 from datetime import datetime, timedelta
 
 import jwt
-from fastapi import HTTPException, Security
-from fastapi.security import OAuth2PasswordBearer
-from jwt import PyJWTError
-from jwt.exceptions import InvalidTokenError
-from starlette.status import HTTP_403_FORBIDDEN
-
-from apps.users.auth.schemas import JWTTokenPayload, CredentialsSchema
-from apps.users.auth.utils.jwt import ALGORITHM
-from apps.users.auth.utils.password import verify_and_update_password
-from apps.users.models import UserModel
-from apps.users.selectors import UserSelector
+from applications.users.auth.schemas import CredentialsSchema
+from applications.users.auth.utils.password import verify_and_update_password
+from applications.users.models import UserModel
+from applications.users.selectors import UserSelector
 from core.config import settings
+from fastapi.security import OAuth2PasswordBearer
+from jwt.exceptions import InvalidTokenError
+from pytz import utc
 
-PASSWORD_RESET_JWT_SUBJECT = "passwordreset"
+PASSWORD_RESET_JWT_SUBJECT = "passwordreset"  # noqa: S105
 EMAIL_CONFIRMATION_JWT_SUBJECT = "emailconfirmation"
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/api/auth/access-token")
 
 
 def generate_password_reset_token(email: str) -> str:
     delta = timedelta(hours=settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS)
-    now = datetime.utcnow()
+    now = datetime.now(tz=utc)
     expires = now + delta
     exp = expires.timestamp()
     encoded_jwt = jwt.encode(
@@ -35,7 +31,6 @@ def generate_password_reset_token(email: str) -> str:
 def verify_password_reset_token(token) -> str | None:
     try:
         decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-        assert decoded_token["sub"] == PASSWORD_RESET_JWT_SUBJECT
         return decoded_token["email"]
     except InvalidTokenError:
         return None
@@ -52,9 +47,7 @@ async def authenticate(credentials: CredentialsSchema) -> UserModel | None:
     if user is None:
         return None
 
-    verified, updated_password_hash = verify_and_update_password(
-        credentials.password, user.password_hash
-    )
+    verified, updated_password_hash = verify_and_update_password(credentials.password, user.password_hash)
 
     if not verified:
         return None

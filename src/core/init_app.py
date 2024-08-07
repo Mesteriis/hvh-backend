@@ -29,6 +29,7 @@ class App(FastAPI):
     @staticmethod
     def get_settings() -> AppSettings:
         from core.config import settings
+
         return settings
 
     def register_routers(self):

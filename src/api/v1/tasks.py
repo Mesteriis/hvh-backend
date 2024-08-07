@@ -1,33 +1,39 @@
 import uuid
 
+from applications.tasks.service import TaskInteractor, TaskSelector
+from applications.tasks.structs import TaskCreate, TaskResponse
+from applications.users.auth.depens import current_user
+from applications.users.models import UserModel
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from apps.tasks.service import TaskSelector, TaskInteractor
-from apps.tasks.structs import TaskResponse, TaskCreate
-from apps.users.auth.depens import current_active_user
-from core.config.db import get_session
 
 tasks_router = APIRouter(tags=["tasks"])
 
 
 @tasks_router.get("/", response_model=list[TaskResponse])
 async def get_list_tasks(
-        db: AsyncSession = Depends(get_session),
-        user=Depends(current_active_user)
+    user: UserModel = Depends(current_user),
 ):
-    return await TaskSelector.get_all(db)
+    if user.is_superuser:
+        return await TaskSelector.get_all()
+    else:
+        return await TaskSelector.get_by_owner(user.pk)
 
 
 @tasks_router.post("/", response_model=TaskResponse)
 async def create_task(
-        data: TaskCreate,
-        db: AsyncSession = Depends(get_session),
-        user=Depends(current_active_user)
+    data: TaskCreate,
+    user: UserModel = Depends(current_user),
 ):
-    return await TaskInteractor.create(str(data.url), db, user)
+    data.owner_id = user.id
+    return await TaskInteractor.create(data)
 
 
-@tasks_router.get("/{task_id}")
-async def get_task(task_id: uuid.UUID, db: AsyncSession = Depends(get_session)):
-    return {"tasks": {}}
+@tasks_router.get("/{task_id}", response_model=TaskResponse)
+async def get_task(
+    task_id: uuid.UUID,
+    user: UserModel = Depends(current_user),
+):
+    if user.is_superuser:
+        return await TaskSelector.get_by_id(task_id)
+    else:
+        return await TaskSelector.get_by_id_and_owner(task_id, user.id)

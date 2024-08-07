@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import String, DateTime, func
-from sqlalchemy.orm import mapped_column, Mapped, relationship
-
-from apps.users.auth.utils.password import get_password_hash
+from applications.users.auth.utils.password import get_password_hash
 from core.config.db import BaseModel
+from sqlalchemy import DateTime, String, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
 class UserModel(BaseModel):
@@ -33,4 +32,3 @@ class UserModel(BaseModel):
     async def set_password(self, password: str) -> None:
         self.password_hash = get_password_hash(password=password)
         await self.save(update_fields=["password_hash"])
-

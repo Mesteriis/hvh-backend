@@ -1,13 +1,16 @@
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, AnyHttpUrl
+from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field
 
 
 class Task(BaseModel):
     model_config = ConfigDict(
         from_attributes=True,
     )
-    url: AnyHttpUrl
+    url: AnyHttpUrl = Field(
+        ...,
+        alias="url",
+    )
     owner_id: UUID
 
 
@@ -18,7 +21,6 @@ class TaskInDB(Task):
 class TaskCreate(Task):
     owner_id: None = None
 
+
 class TaskResponse(TaskInDB):
     pass
-
-

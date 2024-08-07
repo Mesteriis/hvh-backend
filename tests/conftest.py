@@ -19,7 +19,7 @@ from tests._setup.inventory.api_test_client import AsyncApiTestClient  # noqa
 from tests._setup.inventory.logging import set_level_logging  # noqa
 from tests.settings import pytest_settings  # noqa
 
-
+pytest_plugins = pytest_settings.pytest_plugins
 set_level_logging(pytest_settings.logger_level)
 
 
@@ -83,6 +83,8 @@ async def async_engine(apply_migrations):
 async def session(async_engine):
     async with AsyncSessionLocal() as session:
         yield session
+        await session.commit()
+        await session.close()
 
 
 @pytest.fixture(scope='session')

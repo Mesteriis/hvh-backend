@@ -1,14 +1,17 @@
 import factory
+import pytest
 from async_factory_boy.factory.sqlalchemy import AsyncSQLAlchemyFactory
 from factory import Faker as RawFaker, LazyAttribute
 from faker import Faker
 from fastapi_users.password import PasswordHelper
 
-from apps.tasks.models import TaskModel
-from apps.users.models import UserModel
+from applications.tasks.models import TaskModel
+from applications.users.models import UserModel
+from applications.youtube.models import YTChannel, YTPlaylist, YTVideo
 from tests.conftest import AsyncSessionLocal
 
 faker = Faker("en_US")
+
 
 class CustomSQLAlchemyOptions(AsyncSQLAlchemyFactory):
     @classmethod
@@ -28,9 +31,12 @@ class UserModelFactory(CustomSQLAlchemyOptions):
     last_login = faker.date_time_this_year()
     date_joined = faker.date_time_this_year()
 
-
     class Meta:
         model = UserModel
+
+@pytest.fixture(scope="function")
+def user_factory() -> type[UserModelFactory]:
+    return UserModelFactory
 
 
 class TaskModelFactory(CustomSQLAlchemyOptions):
@@ -39,3 +45,98 @@ class TaskModelFactory(CustomSQLAlchemyOptions):
 
     class Meta:
         model = TaskModel
+
+
+@pytest.fixture(scope="function")
+def task_factory() -> type[TaskModelFactory]:
+    return TaskModelFactory
+
+
+class YTChannelFactory(CustomSQLAlchemyOptions):
+    ext_id = factory.Faker("uuid4")
+    owner_id = factory.SubFactory(UserModelFactory)
+    task_id = factory.SubFactory(TaskModelFactory)
+
+    meta_data = factory.LazyAttribute(
+        lambda o: {
+            "title": faker.sentence(),
+            "description": faker.paragraph(),
+            "thumbnail": faker.image_url(),
+            "channel_id": faker.uuid4(),
+            "playlist_id": faker.uuid4(),
+            "tags": [faker.word() for _ in range(5)],
+            "category_id": faker.uuid4(),
+            "view_count": faker.random_int(),
+            "like_count": faker.random_int(),
+            "dislike_count": faker.random_int(),
+            "comment_count": faker.random_int(),
+        }
+    )
+
+    class Meta:
+        model = YTChannel
+
+
+@pytest.fixture(scope="function")
+def yt_channel_factory() -> type[YTChannelFactory]:
+    return YTChannelFactory
+
+
+class YTPlaylistFactory(CustomSQLAlchemyOptions):
+    ext_id = factory.Faker("uuid4")
+    owner_id = factory.SubFactory(UserModelFactory)
+    task_id = factory.SubFactory(TaskModelFactory)
+
+    meta_data = factory.LazyAttribute(
+        lambda o: {
+            "title": faker.sentence(),
+            "description": faker.paragraph(),
+            "thumbnail": faker.image_url(),
+            "channel_id": faker.uuid4(),
+            "playlist_id": faker.uuid4(),
+            "tags": [faker.word() for _ in range(5)],
+            "category_id": faker.uuid4(),
+            "view_count": faker.random_int(),
+            "like_count": faker.random_int(),
+            "dislike_count": faker.random_int(),
+            "comment_count": faker.random_int(),
+        }
+    )
+
+    class Meta:
+        model = YTPlaylist
+
+
+@pytest.fixture(scope="function")
+def yt_playlist_factory() -> type[YTPlaylistFactory]:
+    return YTPlaylistFactory
+
+
+class YTVideoFactory(CustomSQLAlchemyOptions):
+    ext_id = factory.Faker("uuid4")
+    owner_id = factory.SubFactory(UserModelFactory)
+    task_id = factory.SubFactory(TaskModelFactory)
+
+    meta_data = factory.LazyAttribute(
+        lambda o: {
+            "title": faker.sentence(),
+            "description": faker.paragraph(),
+            "thumbnail": faker.image_url(),
+            "channel_id": faker.uuid4(),
+            "playlist_id": faker.uuid4(),
+            "tags": [faker.word() for _ in range(5)],
+            "category_id": faker.uuid4(),
+            "view_count": faker.random_int(),
+            "like_count": faker.random_int(),
+            "dislike_count": faker.random_int(),
+            "comment_count": faker.random_int(),
+        }
+    )
+
+    class Meta:
+        model = YTVideo
+
+
+@pytest.fixture(scope="function")
+def yt_video_factory() -> type[YTVideoFactory]:
+    return YTVideoFactory

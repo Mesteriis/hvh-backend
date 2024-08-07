@@ -2,27 +2,23 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
 from core.config import settings
+from pytz import utc
 
 
 @dataclass
 class AccessToken:
     encoded_jwt: str = field(default_factory=str)
-    iat: int = field(default_factory=lambda: int(datetime.utcnow().timestamp()) * 1000)
+    iat: int = field(default_factory=lambda: int(datetime.now(tz=utc).timestamp()) * 1000)
     exp: int = field(
         default_factory=lambda: int(
-            (
-                datetime.utcnow()
-                + timedelta(minutes=settings.jwt_refresh_token_expire_minutes)
-            ).timestamp()
+            (datetime.now(tz=utc) + timedelta(minutes=settings.jwt_refresh_token_expire_minutes)).timestamp()
         )
         * 1000
     )
 
     def __post_init__(self):
         if self.iat <= 0:
-            raise ValueError(
-                "iat must be a positive integer representing Unix timestamp."
-            )
+            raise ValueError("iat must be a positive integer representing Unix timestamp.")
         if self.exp <= self.iat:
             raise ValueError("exp must be greater than iat.")
 
@@ -36,22 +32,17 @@ class AccessToken:
 @dataclass
 class RefreshToken:
     encoded_jwt: str = field(default_factory=str)
-    iat: int = field(default_factory=lambda: int(datetime.utcnow().timestamp()) * 1000)
+    iat: int = field(default_factory=lambda: int(datetime.now(tz=utc).timestamp()) * 1000)
     exp: int = field(
         default_factory=lambda: int(
-            (
-                datetime.utcnow()
-                + timedelta(minutes=settings.jwt_refresh_token_expire_minutes)
-            ).timestamp()
+            (datetime.now(tz=utc) + timedelta(minutes=settings.jwt_refresh_token_expire_minutes)).timestamp()
         )
         * 1000
     )
 
     def __post_init__(self):
         if self.iat <= 0:
-            raise ValueError(
-                "iat must be a positive integer representing Unix timestamp."
-            )
+            raise ValueError("iat must be a positive integer representing Unix timestamp.")
         if self.exp <= self.iat:
             raise ValueError("exp must be greater than iat.")
 
