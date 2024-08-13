@@ -13,7 +13,7 @@ class UserModel(BaseModel):
     email: Mapped[str] = mapped_column(index=True)
     first_name: Mapped[str] = mapped_column(String(50), nullable=True)
     last_name: Mapped[str] = mapped_column(String(50), nullable=True)
-    hashed_password: Mapped[str] = mapped_column(String(1000), nullable=True)
+    hashed_password: Mapped[str] = mapped_column(String(1000), nullable=False)
     last_login: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
     is_superuser: Mapped[bool] = mapped_column(default=False)
@@ -30,5 +30,11 @@ class UserModel(BaseModel):
         return model
 
     async def set_password(self, password: str) -> None:
-        self.password_hash = get_password_hash(password=password)
-        await self.save(update_fields=["password_hash"])
+        self.hashed_password = get_password_hash(password=password)
+        await self.save()
+
+    async def check_password(self, password: str) -> bool:
+        return get_password_hash(password) == self.hashed_password
+
+    def __repr__(self) -> str:
+        return f"<UserModel id={self.id} email={self.email} is_active={self.is_active}  date_joined={self.date_joined}>"

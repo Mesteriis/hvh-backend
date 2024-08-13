@@ -2,7 +2,7 @@ from sqlalchemy import select
 
 from applications.tasks.models import TaskModel
 from applications.tasks.service import TaskSelector, TaskInteractor
-from applications.tasks.structs import Task
+from applications.tasks.structs import TaskStruct
 
 
 class TestTaskSelector:
@@ -38,7 +38,7 @@ class TestTaskInteractor:
     async def test_create(self, user_factory):
         user = await user_factory.create()
         task = await TaskInteractor.create(
-            Task(url="https://example.com", owner_id=user.id)
+            TaskStruct(url="https://example.com", owner_id=user.id)
         )
         assert task.owner_id == user.id
 

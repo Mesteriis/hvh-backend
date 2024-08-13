@@ -3,7 +3,7 @@ from uuid import UUID
 from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field
 
 
-class Task(BaseModel):
+class TaskStruct(BaseModel):
     model_config = ConfigDict(
         from_attributes=True,
     )
@@ -14,13 +14,13 @@ class Task(BaseModel):
     owner_id: UUID
 
 
-class TaskInDB(Task):
+class TaskInBaseStruct(TaskStruct):
     id: UUID
 
 
-class TaskCreate(Task):
+class TaskCreateStruct(TaskStruct):
     owner_id: None = None
 
 
-class TaskResponse(TaskInDB):
+class TaskResponse(TaskInBaseStruct):
     pass

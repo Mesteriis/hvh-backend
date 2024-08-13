@@ -7,7 +7,7 @@ from fastapi_users.password import PasswordHelper
 
 from applications.tasks.models import TaskModel
 from applications.users.models import UserModel
-from applications.youtube.models import YTChannel, YTPlaylist, YTVideo
+from applications.youtube.models import YTChannelModel, YTPlaylistModel, YTVideoModel
 from tests.conftest import AsyncSessionLocal
 
 faker = Faker("en_US")
@@ -74,7 +74,7 @@ class YTChannelFactory(CustomSQLAlchemyOptions):
     )
 
     class Meta:
-        model = YTChannel
+        model = YTChannelModel
 
 
 @pytest.fixture(scope="function")
@@ -104,7 +104,7 @@ class YTPlaylistFactory(CustomSQLAlchemyOptions):
     )
 
     class Meta:
-        model = YTPlaylist
+        model = YTPlaylistModel
 
 
 @pytest.fixture(scope="function")
@@ -134,7 +134,7 @@ class YTVideoFactory(CustomSQLAlchemyOptions):
     )
 
     class Meta:
-        model = YTVideo
+        model = YTVideoModel
 
 
 @pytest.fixture(scope="function")

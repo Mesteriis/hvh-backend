@@ -9,7 +9,7 @@ from core.config.db import BaseModel
 from .enums import StatusEnum
 
 
-class YTChannel(BaseModel):
+class YTChannelModel(BaseModel):
     __tablename__ = "channels"
 
     owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
@@ -22,7 +22,7 @@ class YTChannel(BaseModel):
     status: Mapped[Enum] = mapped_column(SqlEnum(StatusEnum), default=StatusEnum.new, index=True)
     ext_id: Mapped[str] = mapped_column(index=True, unique=True)
 
-class YTPlaylist(BaseModel):
+class YTPlaylistModel(BaseModel):
     __tablename__ = "playlists"
 
     owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
@@ -34,7 +34,7 @@ class YTPlaylist(BaseModel):
     meta_data: Mapped[dict] = mapped_column(JSON, nullable=True)
     status: Mapped[Enum] = mapped_column(SqlEnum(StatusEnum), default=StatusEnum.new, index=True)
     ext_id: Mapped[str] = mapped_column(index=True, unique=True)
-class YTVideo(BaseModel):
+class YTVideoModel(BaseModel):
     __tablename__ = "videos"
 
     owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))

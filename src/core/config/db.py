@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 from sqlalchemy import UUID, Column, DateTime, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -27,7 +28,7 @@ session_maker = sessionmaker(  # type: ignore
 )
 
 
-# @asynccontextmanager
+@asynccontextmanager
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with session_maker() as session:
         yield session
@@ -41,9 +42,6 @@ class BaseManager:
 
     def __init__(self, model):
         self._model = model
-
-    def get_model_name(self):
-        return self._model.__name__
 
     async def get_by_id(self, id):
         async with session_maker() as session:
@@ -137,6 +135,9 @@ class BaseModel(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=lambda: uuid.uuid4())
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__} id={self.id}>"
+
     @declared_attr
     def objects(cls):
         return BaseManager(cls)
@@ -169,12 +170,12 @@ class BaseModel(Base):
         async with self._session() as session:
             for key, value in kwargs.items():
                 setattr(self, key, value)
-            session.commit()
+            await session.commit()
             session.refresh(self)
 
     async def refresh(self):
         async with self._session() as session:
             session.refresh(self)
 
-    def model_dump(self):
+    def __dict__ (self):
         return {key: getattr(self, key) for key in self.__table__.columns.keys()}

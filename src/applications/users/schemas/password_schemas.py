@@ -1,8 +1,7 @@
-from applications.users.mixins import PasswordValidatorMixin
 from pydantic import BaseModel
 
 
-class ResetPasswordSchema(PasswordValidatorMixin, BaseModel):
+class ResetPasswordSchema(BaseModel):
     password: str
     password_confirmation: str
     reset_token: str
