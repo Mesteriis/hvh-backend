@@ -6,6 +6,9 @@ from pydantic import UUID4, BaseModel, ConfigDict, EmailStr, Field, field_valida
 
 
 class UserStruct(BaseModel):
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
     email: EmailStr
     first_name: str | None = None
     last_name: str | None = None

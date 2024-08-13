@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from typing import Type
 
 from sqlalchemy import UUID, Column, DateTime, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -12,7 +13,6 @@ from sqlalchemy.orm import Mapped, declarative_base, declared_attr, mapped_colum
 
 def get_uri() -> str:
     from core.config import settings
-
     return str(settings.db_uri)
 
 
@@ -45,7 +45,7 @@ class BaseManager:
 
     async def get_by_id(self, id):
         async with session_maker() as session:
-            query = select(self._model).where(self._model.id == id)
+            query = select(self._model).filter_by(id=id)
             instance = await session.execute(query)
             instance = instance.scalar()
             if instance:
@@ -77,7 +77,7 @@ class BaseManager:
             instances = await session.execute(query)
             return instances.scalars().all()
 
-    async def get_or_create(self, **kwargs):
+    async def get_or_create(self, **kwargs) -> tuple[Type[BaseModel], bool]:
         async with session_maker() as session:
             query = select(self._model).filter_by(**kwargs)
             instance = await session.execute(query)
@@ -90,7 +90,7 @@ class BaseManager:
             session.refresh(instance)
             return instance, True
 
-    async def update_or_create(self, **kwargs):
+    async def update_or_create(self, **kwargs) -> tuple[Type[BaseModel], bool]:
         async with session_maker() as session:
             query = select(self._model).filter_by(**kwargs)
             instance = await session.execute(query)
@@ -158,13 +158,13 @@ class BaseModel(Base):
             session.add(self)
             await session.commit()
             session.refresh(self)
-            return self
+        return self
 
     async def delete(self):
         async with self._session() as session:
             await session.delete(self)
             await session.commit()
-            del self
+        del self
 
     async def update(self, **kwargs):
         async with self._session() as session:
@@ -177,5 +177,5 @@ class BaseModel(Base):
         async with self._session() as session:
             session.refresh(self)
 
-    def __dict__ (self):
+    def as_dict(self) -> dict:
         return {key: getattr(self, key) for key in self.__table__.columns.keys()}
