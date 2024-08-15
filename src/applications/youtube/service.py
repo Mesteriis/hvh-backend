@@ -7,66 +7,58 @@ from .structs import YTItemStruct
 
 
 class YTItemSelector:
+    __model: Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel]
 
-    @classmethod
+    def __init__(self, model: Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel]):
+        self.__model = model
+
     async def get_by_id(
-            cls,
-            model: Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel],
+            self,
             item_id: uuid.UUID,
             as_model: bool = False
     ) -> YTVideoModel | YTChannelModel | YTPlaylistModel | YTItemStruct:
         if as_model:
-            return await model.objects.get(pk=item_id)
+            return await self.__model.objects.get(pk=item_id)
         return YTItemStruct.model_validate(
-            await model.objects.get(pk=item_id)
+            await self.__model.objects.get(pk=item_id)
         )
 
-    @classmethod
     async def get_by_ext_id(
-            cls,
-            model: Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel],
+            self,
             ext_id: str
-    ) -> Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel]:
-        return await model.objects.get(ext_id=ext_id)
+    ) -> YTVideoModel | YTChannelModel | YTPlaylistModel:
+        return await self.__model.objects.get(ext_id=ext_id)
 
-    @classmethod
-    async def get_all(cls, model) -> list[Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel]]:
-        return await model.objects.all()
+    async def get_all(self) -> list[YTVideoModel | YTChannelModel | YTPlaylistModel]:
+        return await self.__model.objects.all()
 
-    @classmethod
     async def get_by_owner(
-            cls,
-            model: Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel],
+            self,
             owner_id: uuid.UUID
-    ) -> list[Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel]]:
-        return await model.objects.filter(owner_id=owner_id)
+    ) -> list[YTVideoModel | YTChannelModel | YTPlaylistModel]:
+        return await self.__model.objects.filter(owner_id=owner_id)
 
-    @classmethod
     async def get_by_status(
-            cls,
-            model: Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel],
+            self,
             status: str
-    ) -> list[Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel]]:
-        return await model.objects.filter(status=status)
+    ) -> list[YTVideoModel | YTChannelModel | YTPlaylistModel]:
+        return await self.__model.objects.filter(status=status)
 
 
-class YTItemInteractor(ABC):
-    __model = None
+class YTItemInteractor:
+    __model: Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel]
 
-    @classmethod
-    async def create(cls, model: Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel], data: dict):
-        data = data.model_dump()
-        item = await model.objects.create(url=str(data["url"]), owner_id=data["owner_id"])
+    def __init__(self, model: Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel]):
+        self.__model = model
+
+    async def create(self, data: dict):
+        item = await self.__model.objects.create(url=str(data["url"]), owner_id=data["owner_id"])
         return TaskInDB.model_validate(item)
 
-    @classmethod
-    async def delete(cls, model: Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel],
-                     item_pk: uuid.UUID) -> None:
-        item = await model.objects.get(pk=item_pk)
+    async def delete(self, item_pk: uuid.UUID) -> None:
+        item = await self.__model.objects.get(pk=item_pk)
         await item.delete()
 
-    @classmethod
-    async def update(cls, model: Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel], item_pk: uuid.UUID,
-                     data: dict) -> None:
-        item = await model.objects.get(pk=item_pk)
+    async def update(self, item_pk: uuid.UUID, data: dict) -> None:
+        item = await self.__model.objects.get(pk=item_pk)
         await item.update(**data).apply()

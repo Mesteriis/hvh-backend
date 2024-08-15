@@ -9,7 +9,7 @@ pytestmark = pytest.mark.unit
 
 
 class TestYTItemSelector:
-    service = YTItemSelector
+    service = YTItemSelector(YTVideoModel)
 
     async def test_get_by_id(self, user_factory, task_factory, yt_video_factory):
         user = await user_factory.create()
@@ -18,7 +18,7 @@ class TestYTItemSelector:
             owner_id=user.pk,
             task_id=task.pk
         )
-        video_in_db = await self.service.get_by_id(YTVideoModel, video.id)
+        video_in_db = await self.service.get_by_id(video.id)
         assert video_in_db.meta_data
 
     async def test_get_by_ext_id(self, user_factory, task_factory, yt_video_factory):
@@ -28,7 +28,7 @@ class TestYTItemSelector:
             owner_id=user.pk,
             task_id=task.pk
         )
-        video_in_db = await self.service.get_by_ext_id(YTVideoModel, video.ext_id)
+        video_in_db = await self.service.get_by_ext_id(video.ext_id)
         assert video_in_db.id == video.id
         assert video_in_db.owner_id == user.pk
         assert video_in_db.task_id == task.pk
@@ -43,7 +43,7 @@ class TestYTItemSelector:
             owner_id=user.pk,
             task_id=task.pk
         )
-        videos_in_db = await self.service.get_all(YTVideoModel)
+        videos_in_db = await self.service.get_all()
         assert len(videos_in_db) >= 5
 
     async def test_get_by_owner(self, user_factory, task_factory, yt_video_factory):
@@ -54,7 +54,7 @@ class TestYTItemSelector:
             owner_id=user.pk,
             task_id=task.pk
         )
-        videos_in_db = await self.service.get_by_owner(YTVideoModel, user.pk)
+        videos_in_db = await self.service.get_by_owner(user.pk)
         assert len(videos_in_db) == 5
 
     async def test_get_by_status(self, user_factory, task_factory, yt_video_factory):
@@ -66,14 +66,14 @@ class TestYTItemSelector:
             owner_id=user.pk,
             task_id=task.pk
         )
-        videos_in_db = await self.service.get_by_status(YTVideoModel, "new")
+        videos_in_db = await self.service.get_by_status("new")
         assert len(videos_in_db) >= 5
 
 
 
 
 class TestYTItemInteractor:
-    service = YTItemInteractor
+    service = YTItemInteractor(YTVideoModel)
 
     async def test_create(self, user_factory, task_factory):
         user = await user_factory.create()

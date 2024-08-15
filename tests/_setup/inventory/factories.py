@@ -3,9 +3,9 @@ import pytest
 from async_factory_boy.factory.sqlalchemy import AsyncSQLAlchemyFactory
 from factory import Faker as RawFaker, LazyAttribute
 from faker import Faker
-from fastapi_users.password import PasswordHelper
 
 from applications.tasks.models import TaskModel
+from applications.users.auth.utils.password import get_password_hash
 from applications.users.models import UserModel
 from applications.youtube.models import YTChannelModel, YTPlaylistModel, YTVideoModel
 from tests.conftest import AsyncSessionLocal
@@ -23,7 +23,7 @@ class CustomSQLAlchemyOptions(AsyncSQLAlchemyFactory):
 
 class UserModelFactory(CustomSQLAlchemyOptions):
     email = LazyAttribute(lambda a: f"{a.first_name}.{a.last_name}@test.com".lower())
-    hashed_password = factory.Sequence(lambda n: PasswordHelper().password_hash.hash(f"test_user_{n}@test.com"))
+    hashed_password = factory.Sequence(lambda n: get_password_hash(f"test_user_{n}@test.com"))
     first_name = RawFaker("first_name")
     last_name = RawFaker("last_name")
     is_active = True

@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import Type
 
 from sqlalchemy import UUID, Column, DateTime, func, select
@@ -150,8 +151,8 @@ class BaseModel(Base):
     def pk(self) -> uuid.UUID:
         return self.id
 
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
     async def save(self) -> BaseModel:
         async with self._session() as session:
