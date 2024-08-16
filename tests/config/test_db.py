@@ -43,10 +43,13 @@ class TestBaseModel:
     async def test_update(self, model_for_test):
         instance = model_for_test(string="test_update_1")
         await instance.save()
+        _pk = instance.pk
+        await instance._session().commit()
         await instance.update(**{
             "string": "test_update_2",
             "bool": True,
         })
+        assert instance.pk == _pk, f"Instance pk: {instance.pk}"
         assert instance.string == "test_update_2", f"Instance string: {instance.string}"
 
 

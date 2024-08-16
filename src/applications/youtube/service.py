@@ -1,5 +1,4 @@
 import uuid
-from abc import ABC
 from typing import Type
 
 from .models import YTVideoModel, YTChannelModel, YTPlaylistModel
@@ -51,14 +50,13 @@ class YTItemInteractor:
     def __init__(self, model: Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel]):
         self.__model = model
 
-    async def create(self, data: dict):
-        item = await self.__model.objects.create(url=str(data["url"]), owner_id=data["owner_id"])
-        return TaskInDB.model_validate(item)
+    async def create(self, data: YTItemStruct):
+        return await self.__model.objects.create(**data.model_dump())
 
     async def delete(self, item_pk: uuid.UUID) -> None:
         item = await self.__model.objects.get(pk=item_pk)
         await item.delete()
 
-    async def update(self, item_pk: uuid.UUID, data: dict) -> None:
+    async def update(self, item_pk: uuid.UUID, data: YTItemStruct) -> None:
         item = await self.__model.objects.get(pk=item_pk)
-        await item.update(**data).apply()
+        await item.update(**data.model_dump(exclude_none=true)).apply()

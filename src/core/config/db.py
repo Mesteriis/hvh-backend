@@ -88,7 +88,7 @@ class BaseManager:
             instance = self._model(**kwargs)
             session.add(instance)
             await session.commit()
-            session.refresh(instance)
+            await session.refresh(instance)
             return instance, True
 
     async def update_or_create(self, **kwargs) -> tuple[Type[BaseModel], bool]:
@@ -105,7 +105,7 @@ class BaseManager:
             instance = self._model(**kwargs)
             session.add(instance)
             await session.commit()
-            session.refresh(instance)
+            await session.refresh(instance)
             return instance, True
 
     async def create(self, **kwargs):
@@ -113,7 +113,7 @@ class BaseManager:
             instance = self._model(**kwargs)
             session.add(instance)
             await session.commit()
-            session.refresh(instance)
+            await session.refresh(instance)
             return instance
 
     @staticmethod
@@ -158,7 +158,7 @@ class BaseModel(Base):
         async with self._session() as session:
             session.add(self)
             await session.commit()
-            session.refresh(self)
+            await session.refresh(self)
         return self
 
     async def delete(self):
@@ -171,12 +171,13 @@ class BaseModel(Base):
         async with self._session() as session:
             for key, value in kwargs.items():
                 setattr(self, key, value)
+            session.add(self)
             await session.commit()
-            session.refresh(self)
+            await session.refresh(self)
 
     async def refresh(self):
         async with self._session() as session:
-            session.refresh(self)
+            await session.refresh(self)
 
     def as_dict(self) -> dict:
         return {key: getattr(self, key) for key in self.__table__.columns.keys()}

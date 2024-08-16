@@ -82,7 +82,7 @@ class TestYTItemInteractor:
             "url": "https://www.youtube.com/watch?v=123456",
             "owner_id": user.pk
         }
-        video = await self.service.create(YTVideoModel, data)
+        video = await self.service.create(data)
         assert video.owner_id == user.pk
         assert video.task_id == task.pk
         assert video.meta_data

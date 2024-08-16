@@ -12,7 +12,7 @@ from tests.conftest import AsyncSessionLocal
 
 faker = Faker("en_US")
 
-
+from asyncio import run
 class CustomSQLAlchemyOptions(AsyncSQLAlchemyFactory):
     @classmethod
     async def create(cls, **kwargs):
@@ -21,7 +21,8 @@ class CustomSQLAlchemyOptions(AsyncSQLAlchemyFactory):
             return await super().create(**kwargs)
 
 
-class UserModelFactory(CustomSQLAlchemyOptions):
+# class UserModelFactory(CustomSQLAlchemyOptions):
+class UserModelFactory(AsyncSQLAlchemyFactory):
     email = LazyAttribute(lambda a: f"{a.first_name}.{a.last_name}@test.com".lower())
     hashed_password = factory.Sequence(lambda n: get_password_hash(f"test_user_{n}@test.com"))
     first_name = RawFaker("first_name")
@@ -33,6 +34,8 @@ class UserModelFactory(CustomSQLAlchemyOptions):
 
     class Meta:
         model = UserModel
+        # sqlalchemy_session_factory = AsyncSessionLocal
+        sqlalchemy_session = AsyncSessionLocal()
 
 @pytest.fixture(scope="function")
 def user_factory() -> type[UserModelFactory]:
@@ -41,6 +44,7 @@ def user_factory() -> type[UserModelFactory]:
 
 class TaskModelFactory(CustomSQLAlchemyOptions):
     url = factory.Faker("url")
+    # owner_id = factory.LazyAttribute( lambda o: run(UserModelFactory.create()).id)
     owner_id = factory.SubFactory(UserModelFactory)
 
     class Meta:

@@ -22,6 +22,7 @@ class YTChannelModel(BaseModel):
     status: Mapped[Enum] = mapped_column(SqlEnum(StatusEnum), default=StatusEnum.new, index=True)
     ext_id: Mapped[str] = mapped_column(index=True, unique=True)
 
+
 class YTPlaylistModel(BaseModel):
     __tablename__ = "playlists"
 
@@ -34,6 +35,8 @@ class YTPlaylistModel(BaseModel):
     meta_data: Mapped[dict] = mapped_column(JSON, nullable=True)
     status: Mapped[Enum] = mapped_column(SqlEnum(StatusEnum), default=StatusEnum.new, index=True)
     ext_id: Mapped[str] = mapped_column(index=True, unique=True)
+
+
 class YTVideoModel(BaseModel):
     __tablename__ = "videos"
 
