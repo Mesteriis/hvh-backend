@@ -1,11 +1,7 @@
-import uuid
-
-from pydantic import BaseModel, ConfigDict, Field
-from setuptools.command.alias import alias
-
 from applications.tasks.structs import TaskInBaseStruct
 from applications.users.schemas.user_schemas import UserInBaseStruct
 from applications.youtube.enums import StatusEnum
+from pydantic import BaseModel, ConfigDict
 
 
 class YTItemStruct(BaseModel):

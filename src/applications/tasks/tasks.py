@@ -1,10 +1,15 @@
 import uuid
 
-from celery import shared_task
-
 from applications.tasks.service import TaskSelector
-from applications.youtube.service import YTVideoInteractor, YTChannelInteractor, YTPlaylistInteractor, YTVideoSelector, \
-    YTChannelSelector, YTPlaylistSelector
+from applications.youtube.service import (
+    YTChannelInteractor,
+    YTChannelSelector,
+    YTPlaylistInteractor,
+    YTPlaylistSelector,
+    YTVideoInteractor,
+    YTVideoSelector,
+)
+from celery import shared_task
 from tools.media_downloader.downloader import MediaDownloader
 
 

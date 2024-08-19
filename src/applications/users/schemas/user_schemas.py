@@ -1,8 +1,7 @@
 import uuid
-from datetime import date, datetime
+from datetime import datetime
 
-from pydantic import UUID4, BaseModel, ConfigDict, EmailStr, Field, field_validator
-
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class UserStruct(BaseModel):
@@ -32,4 +31,3 @@ class UserRegisterStruct(BaseModel):
 class UserUpdateStruct(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
-

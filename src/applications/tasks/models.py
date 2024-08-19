@@ -1,7 +1,8 @@
 import uuid
 from enum import Enum
-from sqlalchemy import Enum as SqlEnum
+
 from core.config.db import BaseModel
+from sqlalchemy import Enum as SqlEnum
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -12,6 +13,7 @@ class TaskStatusEnum(Enum):
     in_progress = "in_progress"
     completed = "completed"
     failed = "failed"
+
 
 class TaskModel(BaseModel):
     __tablename__ = "tasks"
@@ -25,4 +27,3 @@ class TaskModel(BaseModel):
 
     def __repr__(self) -> str:
         return f"<TaskModel id={self.id} url={self.url} status={self.status}>"
-

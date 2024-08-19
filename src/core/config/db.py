@@ -4,9 +4,8 @@ import uuid
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Type
 
-from sqlalchemy import UUID, Column, DateTime, func, select
+from sqlalchemy import UUID, DateTime, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, declarative_base, declared_attr, mapped_column, sessionmaker
@@ -14,6 +13,7 @@ from sqlalchemy.orm import Mapped, declarative_base, declared_attr, mapped_colum
 
 def get_uri() -> str:
     from core.config import settings
+
     return str(settings.db_uri)
 
 
@@ -78,7 +78,7 @@ class BaseManager:
             instances = await session.execute(query)
             return instances.scalars().all()
 
-    async def get_or_create(self, **kwargs) -> tuple[Type[BaseModel], bool]:
+    async def get_or_create(self, **kwargs) -> tuple[type[BaseModel], bool]:
         async with session_maker() as session:
             query = select(self._model).filter_by(**kwargs)
             instance = await session.execute(query)
@@ -91,7 +91,7 @@ class BaseManager:
             await session.refresh(instance)
             return instance, True
 
-    async def update_or_create(self, **kwargs) -> tuple[Type[BaseModel], bool]:
+    async def update_or_create(self, **kwargs) -> tuple[type[BaseModel], bool]:
         async with session_maker() as session:
             query = select(self._model).filter_by(**kwargs)
             instance = await session.execute(query)
