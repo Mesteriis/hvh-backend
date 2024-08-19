@@ -35,7 +35,7 @@ class UserModelFactory(AsyncSQLAlchemyFactory):
     class Meta:
         model = UserModel
         # sqlalchemy_session_factory = AsyncSessionLocal
-        sqlalchemy_session = AsyncSessionLocal()
+        sqlalchemy_session = AsyncSessionLocal() 
 
 @pytest.fixture(scope="function")
 def user_factory() -> type[UserModelFactory]:

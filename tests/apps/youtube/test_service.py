@@ -1,9 +1,10 @@
 import pytest
+from kombu.transport.sqlalchemy import metadata
 
 from applications.tasks.models import TaskModel
 from applications.youtube.models import YTVideoModel
 from applications.youtube.service import YTItemInteractor, YTItemSelector
-
+from applications.youtube.structs import YTItemStruct
 
 pytestmark = pytest.mark.unit
 
@@ -70,19 +71,21 @@ class TestYTItemSelector:
         assert len(videos_in_db) >= 5
 
 
-
-
 class TestYTItemInteractor:
     service = YTItemInteractor(YTVideoModel)
 
     async def test_create(self, user_factory, task_factory):
         user = await user_factory.create()
         task = await task_factory.create(owner_id=user.pk)
-        data = {
-            "url": "https://www.youtube.com/watch?v=123456",
-            "owner_id": user.pk
-        }
+        data = YTItemStruct.model_validate(
+            {
+                "owner": user,
+                "task": task,
+                "meta_data": None,
+                "status": "new",
+                "ext_id": "1234"
+            }
+        )
         video = await self.service.create(data)
-        assert video.owner_id == user.pk
-        assert video.task_id == task.pk
-        assert video.meta_data
+        assert video.owner.id == user.pk
+        assert video.task.id == task.pk

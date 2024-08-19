@@ -10,7 +10,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.12,<4.0"
-fastapi = "^0.112.0"
+fastapi = "^0.112.1"
 uvicorn = "^0.30.5"
 asyncpg = "^0.29.0"
 pydantic-settings = "^2.4.0"

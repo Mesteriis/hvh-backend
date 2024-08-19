@@ -50,8 +50,14 @@ class YTItemInteractor:
     def __init__(self, model: Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel]):
         self.__model = model
 
-    async def create(self, data: YTItemStruct):
-        return await self.__model.objects.create(**data.model_dump())
+    async def create(self, data: YTItemStruct) -> YTItemStruct:
+        return YTItemStruct.model_validate(await self.__model.objects.create(
+            **data.model_dump(
+                exclude={"owner", "task"}
+            ),
+            owner_id=data.owner.id,
+            task_id=data.task.id
+        ))
 
     async def delete(self, item_pk: uuid.UUID) -> None:
         item = await self.__model.objects.get(pk=item_pk)
@@ -59,4 +65,4 @@ class YTItemInteractor:
 
     async def update(self, item_pk: uuid.UUID, data: YTItemStruct) -> None:
         item = await self.__model.objects.get(pk=item_pk)
-        await item.update(**data.model_dump(exclude_none=true)).apply()
+        await item.update(**data.model_dump(exclude_none=True)).apply()
