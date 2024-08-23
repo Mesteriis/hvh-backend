@@ -1,5 +1,5 @@
 __all__ = [
-    "test_periodic_task",
+    "parse_url",
 ]
 
-from applications.tasks.tasks import test_periodic_task
+from applications.tasks.tasks import parse_url

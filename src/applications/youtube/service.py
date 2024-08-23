@@ -43,10 +43,8 @@ class YTItemInteractor:
             )
         )
 
-    async def delete(self, item_pk: uuid.UUID) -> None:
-        item = await self.__model.objects.get(pk=item_pk)
-        await item.delete()
-
-    async def update(self, item_pk: uuid.UUID, data: YTItemStruct) -> None:
-        item = await self.__model.objects.get(pk=item_pk)
-        await item.update(**data.model_dump(exclude_none=True)).apply()
+    async def set_metadata(self, item_id: uuid.UUID, data) -> YTItemStruct:
+        item = await self.__model.objects.get(pk=item_id)
+        await item.update(meta_data=data)
+        item.status = "parsed"
+        return YTItemStruct.model_validate(item)
