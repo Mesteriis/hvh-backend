@@ -46,7 +46,7 @@ async def on_api_exception(_: Request, exception: APIException) -> JSONResponse:
     return JSONResponse(content=content, status_code=exception.status_code)
 
 
-# TODO: uncomment when android team is ready to accept extended json (rn they only want description -_-)
+# TODO.md: uncomment when android team is ready to accept extended json (rn they only want description -_-)
 async def validation_exception_handler(_: Request, exc: RequestValidationError):
     details = exc.errors()
     errors_with_descriptions = []

@@ -9,19 +9,19 @@ from sqlalchemy.orm import sessionmaker
 from contants import ROOT_DIR, APP_FOLDER
 from core.config import settings
 
+# TODO.md: Move to setup fixture
 settings.db_uri = str(settings.db_uri) + '_test'
 DATABASE_URL = settings.db_uri
 settings.init_logger = False
 
 from core.init_app import App  # noqa
-from tests._setup.db_tools import drop_database, create_database  # noqa
-from tests._setup.inventory.api_test_client import AsyncApiTestClient  # noqa
-from tests._setup.inventory.logging import set_level_logging  # noqa
+from tests._inventory import drop_database, create_database  # noqa
+from tests._inventory import AsyncApiTestClient  # noqa
+from tests._inventory import set_level_logging  # noqa
 from tests.settings import pytest_settings  # noqa
 
 pytest_plugins = pytest_settings.pytest_plugins
 set_level_logging(pytest_settings.logger_level)
-
 
 engine = create_async_engine(DATABASE_URL, future=True)
 AsyncSessionLocal = sessionmaker(  # type: ignore
@@ -41,6 +41,7 @@ async def setup_test_database():
     yield
     if pytest_settings.clean_db:
         await drop_database(DATABASE_URL)
+
 
 @pytest.fixture(scope='session')
 async def event_loop():

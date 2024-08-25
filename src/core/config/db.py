@@ -140,7 +140,7 @@ class BaseModel(Base):
         return f"<{self.__class__.__name__} id={self.id}>"
 
     @declared_attr
-    def objects(cls):
+    def objects(cls):  # noqa
         return BaseManager(cls)
 
     @property

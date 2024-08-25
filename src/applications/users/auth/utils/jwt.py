@@ -59,7 +59,7 @@ def decode_jwt(token: str, _: bool = True) -> dict[str, Any]:
     signature check fails, or if its 'exp' claim indicates it has expired.
     """
     try:
-        return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        return jwt.decode(token, settings.secret_key, algorithms=[settings.jwt_algorithm])
     except InvalidAlgorithmError as ex:
         raise HTTPException(status_code=400, detail="Invalid algorithm specified") from ex
     except InvalidTokenError as ex:

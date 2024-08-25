@@ -22,7 +22,7 @@ class CustomSQLAlchemyOptions(AsyncSQLAlchemyFactory):
 
 
 # class UserModelFactory(CustomSQLAlchemyOptions):
-class UserModelFactory(AsyncSQLAlchemyFactory):
+class UserModelFactory(CustomSQLAlchemyOptions):
     email = LazyAttribute(lambda a: f"{a.first_name}.{a.last_name}@test.com".lower())
     hashed_password = factory.Sequence(lambda n: get_password_hash(f"test_user_{n}@test.com"))
     first_name = RawFaker("first_name")
@@ -35,7 +35,8 @@ class UserModelFactory(AsyncSQLAlchemyFactory):
     class Meta:
         model = UserModel
         # sqlalchemy_session_factory = AsyncSessionLocal
-        sqlalchemy_session = AsyncSessionLocal() 
+        # sqlalchemy_session = AsyncSessionLocal()
+
 
 @pytest.fixture(scope="function")
 def user_factory() -> type[UserModelFactory]:

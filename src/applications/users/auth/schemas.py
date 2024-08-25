@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import UUID4, BaseModel
 
 
@@ -12,6 +14,7 @@ class JWTPairToken(BaseModel):
     access_expiration_at: int
     refresh: str
     refresh_expiration_at: int
+    user_id: UUID
 
 
 class RefreshJWTToken(BaseModel):
@@ -26,5 +29,3 @@ class JWTTokenPayload(BaseModel):
     user_id: str | UUID4 = None
 
 
-class MsgSchema(BaseModel):
-    msg: str

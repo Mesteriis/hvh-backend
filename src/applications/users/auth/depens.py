@@ -16,9 +16,16 @@ async def current_user(token: str = Security(reusable_oauth2)) -> UserModel | No
         token_data = JWTTokenPayload(**payload)
     except PyJWTError as e:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials") from e
-    user = await UserSelector.get_user_by_uid(token_data.user_id)
-    if user is None:
+    try:
+        user = await UserSelector.get_by_uid(token_data.user_id)
+    except UserModel.NotFoundError:
         raise HTTPException(status_code=404, detail="User not found")
     if user.is_active is False:
         raise HTTPException(status_code=400, detail="Inactive user")
+    return user
+
+async def superuser(token: str = Security(reusable_oauth2)) -> UserModel | None:
+    user = await current_user(token)
+    if user.is_superuser is False:
+        raise HTTPException(status_code=403, detail="The user does not have enough privileges")
     return user

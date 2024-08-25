@@ -3,6 +3,7 @@ import pytest
 
 from applications.users.interactors import UserInteractor
 from applications.users.schemas.user_schemas import UserRegisterStruct
+from core.config import settings
 
 pytestmark = pytest.mark.unit
 
@@ -16,4 +17,5 @@ async def test_registry_user():
         data=UserRegisterStruct.model_validate(user_data)
     )
     assert user.email == user_data['email']
+    assert user.is_active != settings.id_account_verification
 

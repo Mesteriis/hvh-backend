@@ -2,8 +2,9 @@ __all__ = ["v1_router"]
 
 from fastapi import APIRouter
 
-from .tasks import tasks_router
+from .tasks_views import tasks_router
 from .user_views import users_router
+from .auth_views import auth_router
 
 v1_router = APIRouter()
 v1_router.include_router(
@@ -13,4 +14,8 @@ v1_router.include_router(
 v1_router.include_router(
     users_router,
     prefix="/users",
+)
+v1_router.include_router(
+    auth_router,
+    prefix="/auth",
 )

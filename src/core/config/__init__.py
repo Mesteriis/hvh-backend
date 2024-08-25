@@ -67,6 +67,7 @@ class AppSettings(BaseSettings):
     jwt_refresh_token_expire_minutes: int = 10080  # 7 days
 
     id_account_verification: bool = False
+    email_reset_token_expire_hours: int = 24
 
     def init_settings(self) -> dict[str, Any]:
         return {

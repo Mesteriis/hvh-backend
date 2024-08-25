@@ -54,9 +54,9 @@ class AsyncApiTestClient(AsyncClient):
 
     @staticmethod
     async def _generate_user(
-            is_superuser=False, is_active=True, is_email_verified=True
+            is_superuser=False, is_active=True
     ) -> UserModel:
-        from tests._setup.inventory.factories import UserModelFactory
+        from tests._inventory.factories import UserModelFactory
         user = await UserModelFactory.create(
             is_active=is_active,
             is_superuser=is_superuser,

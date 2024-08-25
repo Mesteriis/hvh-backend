@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from .constants import DB_URI_IN_MEMORY, DB_URI_FILE, DB_URI_POSTGRES
 from .constants import TEST_MEDIA_FOLDER
-from ._setup.inventory.logging import set_level_logging
+from tests._inventory.logging import set_level_logging
 
 
 class DataBaseTypeInTestEnum(str, Enum):
@@ -21,7 +21,7 @@ class PyTestSettings(BaseSettings):
     db_type: DataBaseTypeInTestEnum = DataBaseTypeInTestEnum.postgres
 
     pytest_plugins: list[str] = [
-        "tests._setup.inventory.factories",
+        "tests._inventory.factories",
     ]
     logger_level: str = "ERROR"
     logger_name: str = "tests"
