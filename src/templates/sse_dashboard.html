@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSE Dashboard</title>
+
+</head>
+<body>
+<div class="streams_wrapper">
+    {% for stream in streams %}
+    <div>
+        <h1>Stream Name: {{ stream.name }}</h1>
+        <h2>Stream ID: {{ stream.id }}</h2>
+        <h3>Stream URL: {{ stream.url }}</h3>
+        <p id="{{ stream.id }}"></p>
+
+<!--        <div class="content_stream">-->
+<!--            <pre>-->
+<!--                <code id="{{ stream.id }}"></code>-->
+<!--            </pre>-->
+<!--        </div>-->
+    </div>
+    {% endfor %}
+</div>
+<!--<pre><code id=acct></code></pre>-->
+<!--<pre><code id=planets></code></pre>-->
+<style>
+    body {
+        background: #efefef;
+    }
+
+    pre {
+        background-color: ghostwhite;
+        border: 1px solid silver;
+        padding: 10px 20px;
+        border-radius: 4px;
+        width: 25%;
+        margin: 20px auto;
+    }
+</style>
+<script>
+    Object.prototype.prettyPrint = function () {
+        let jsonLine = /^( *)("[\w]+": )?("[^"]*"|[\w.+-]*)?([,[{])?$/mg;
+        let replacer = function (match, pIndent, pKey, pVal, pEnd) {
+            let key = '<span class="json-key" style="color: brown">',
+                val = '<span class="json-value" style="color: navy">',
+                str = '<span class="json-string" style="color: olive">',
+                r = pIndent || '';
+            if (pKey)
+                r = r + key + pKey.replace(/[": ]/g, '') + '</span>: ';
+            if (pVal)
+                r = r + (pVal[0] == '"' ? str : val) + pVal + '</span>';
+            return r + (pEnd || '');
+        };
+
+        return JSON.stringify(this, null, 3)
+            .replace(/&/g, '&amp;').replace(/\\"/g, '&quot;')
+            .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(jsonLine, replacer);
+    }
+    const streams = JSON.parse('{{ streams|tojson }}');
+
+    for (let stream of streams) {
+        stream.connect = new EventSource(stream.url);
+
+        try {
+            stream.connect.onmessage = function (event) {
+                console.log('Received data:', event.data);
+                // document.getElementById(stream.id).innerHTML = JSON.parse(event.data).prettyPrint();
+                document.getElementById(stream.id).innerText = event.data;
+            }
+        } catch (error) {
+            console.error('Error processing message:', error);
+        }
+        stream.connect.onerror = function (event) {
+            console.error('EventSource failed:', event);
+            stream.connect.close();
+        };
+    }
+</script>
+
+</body>
+</html>

@@ -1,8 +1,12 @@
 import logging
 
+from starlette.middleware.trustedhost import TrustedHostMiddleware
+from starlette.routing import Router
+
 from api import api_router
+from api.v1.sse_views import dashboard_streams
 from core.config import AppSettings
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError
 from starlette.middleware.cors import CORSMiddleware
@@ -20,8 +24,8 @@ class App(FastAPI):
     def __init__(self):
         self.__settings = self.get_settings()
         super().__init__(**self.__settings.init_settings())
-        if self.__settings.init_logger:
-            self.init_logger()
+        # if self.__settings.init_logger:
+        #     self.init_logger()
         self.register_routers()
         self.register_exceptions()
         self.register_middlewares()
@@ -37,7 +41,15 @@ class App(FastAPI):
         def healthcheck():
             return {"status": "ok"}
 
+        self.include_router(self.ssr_router)
+
         self.include_router(api_router)
+
+    @property
+    def ssr_router(self):
+        root_router = APIRouter(prefix="/ssr", tags=["ssr"])
+        root_router.get('/sse_dashboard')(dashboard_streams)
+        return root_router
 
     def register_exceptions(self):
         self.add_exception_handler(APIException, on_api_exception)  # noqa: type
@@ -51,8 +63,8 @@ class App(FastAPI):
             allow_credentials=self.__settings.cors_allow_credentials,
             allow_methods=self.__settings.cors_allow_methods,
             allow_headers=self.__settings.cors_allow_headers,
-            expose_headers=["X-Request-ID"],
         )
+
 
     def init_logger(self):
         handlers = [
