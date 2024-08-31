@@ -19,7 +19,7 @@ class UserModel(BaseModel):
     is_superuser: Mapped[bool] = mapped_column(default=False)
     date_joined: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
-    tasks: Mapped["TaskModel"] = relationship("TaskModel", back_populates="owner")
+    tasks: Mapped[TaskModel] = relationship("TaskModel", back_populates="owner")
 
     async def set_password(self, password: str) -> None:
         self.hashed_password = get_password_hash(password=password)

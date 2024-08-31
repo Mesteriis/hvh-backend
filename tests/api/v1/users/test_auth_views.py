@@ -1,7 +1,7 @@
 import faker
 import pytest
 
-from tests._inventory import assert_response
+from tests.inventory import assert_response
 
 pytestmark = pytest.mark.api
 

@@ -4,7 +4,6 @@ from pydantic import UUID4, BaseModel
 
 
 class CredentialsSchema(BaseModel):
-    username: str | None | None = None
     email: str | None | None = None
     password: str
 
@@ -27,5 +26,3 @@ class JWTTokenData(BaseModel):
 
 class JWTTokenPayload(BaseModel):
     user_id: str | UUID4 = None
-
-

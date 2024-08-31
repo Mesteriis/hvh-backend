@@ -29,6 +29,9 @@ class YTItemSelector:
     async def get_by_status(self, status: str) -> list[YTVideoModel | YTChannelModel | YTPlaylistModel]:
         return await self.__model.objects.filter(status=status)
 
+    async def get_by_task(self, task_id: uuid.UUID) -> list[YTVideoModel | YTChannelModel | YTPlaylistModel]:
+        return await self.__model.objects.get(task_id=task_id)
+
 
 class YTItemInteractor:
     __model: type[YTVideoModel] | type[YTChannelModel] | type[YTPlaylistModel]
@@ -47,4 +50,5 @@ class YTItemInteractor:
         item = await self.__model.objects.get(pk=item_id)
         await item.update(meta_data=data)
         item.status = "parsed"
+        await item.save()
         return YTItemStruct.model_validate(item)

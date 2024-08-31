@@ -24,6 +24,7 @@ async def current_user(token: str = Security(reusable_oauth2)) -> UserModel | No
         raise HTTPException(status_code=400, detail="Inactive user")
     return user
 
+
 async def superuser(token: str = Security(reusable_oauth2)) -> UserModel | None:
     user = await current_user(token)
     if user.is_superuser is False:

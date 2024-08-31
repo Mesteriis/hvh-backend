@@ -1,14 +1,15 @@
 from __future__ import annotations
 
+import asyncio
 import uuid
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import datetime
 
 from sqlalchemy import UUID, DateTime, func, select
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session, async_sessionmaker, create_async_engine
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Mapped, declarative_base, declared_attr, mapped_column, sessionmaker
+from sqlalchemy.orm import Mapped, declarative_base, declared_attr, mapped_column
 
 
 def get_uri() -> str:
@@ -22,17 +23,13 @@ engine = create_async_engine(get_uri(), future=True)
 if "asyncpg" not in str(engine.url):
     raise ValueError("Only async mode is supported")
 
-session_maker = sessionmaker(  # type: ignore
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-)
+session_maker = async_sessionmaker(engine, expire_on_commit=True)
+async_session = async_scoped_session(session_maker, scopefunc=asyncio.current_task)
 
 
 @asynccontextmanager
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
-    async with session_maker() as session:
-        yield session
+    yield async_session
 
 
 Base = declarative_base()
@@ -140,7 +137,7 @@ class BaseModel(Base):
         return f"<{self.__class__.__name__} id={self.id}>"
 
     @declared_attr
-    def objects(cls):  # noqa
+    def objects(cls):
         return BaseManager(cls)
 
     @property

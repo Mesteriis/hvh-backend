@@ -3,18 +3,18 @@ from uuid import UUID
 from applications.users.auth.utils.contrib import verify_password_reset_token
 from applications.users.models import UserModel
 from applications.users.schemas import ResetPasswordSchema
+from core.config import settings
+from core.redis_utils import acquire_lock
 from fastapi import HTTPException
 
-from core.config import settings
 from .auth.utils.password import get_password_hash
-from .schemas.user_schemas import UserRegisterStruct, UserInBaseStruct
+from .schemas.user_schemas import UserRegisterStruct, UserUpdateStruct
 from .selectors import UserSelector
 
 
 class UserInteractor:
-
     @classmethod
-    async def update(cls, user_id,  user_data) -> UserModel:
+    async def update(cls, user_id, user_data: UserUpdateStruct) -> UserModel:
         user_data: dict = user_data.model_dump(exclude_unset=True)
         user = await UserSelector.get_by_uid(user_id)
         await user.update(**user_data)
@@ -37,6 +37,7 @@ class UserInteractor:
             )
 
             return user
+
     @classmethod
     async def block_user(cls, user_id: UUID) -> UserModel:
         user = await UserSelector.get_by_uid(user_id)
@@ -61,7 +62,8 @@ class UserInteractor:
 
 
 class PasswordInteractor:
-    async def reset_password(self, payload: ResetPasswordSchema) -> None:
+    @classmethod
+    async def reset_password(cls, payload: ResetPasswordSchema) -> None:
         reset_token = payload.reset_token
         email = verify_password_reset_token(reset_token)
 
@@ -79,4 +81,21 @@ class PasswordInteractor:
         password = payload.password
         hashed_password = get_password_hash(password)
         user.password_hash = hashed_password
-        await user.save(update_fields=("password_hash",))
+        await user.save()
+
+    @classmethod
+    async def recover_password(cls, email) -> None:
+        lock_key = f"recover_password_{email}"
+        lock_acquired = await acquire_lock(lock_key, 10)
+        if not lock_acquired:
+            raise HTTPException(status_code=429, detail="Please wait a minute before trying again.")
+
+        user = await UserSelector.get_by_email(email=email)
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail="The user with this username does not exist in the system.",
+            )
+
+        # if settings.EMAILS_ENABLED:
+        #     await send_reset_password_email.kiq(email)

@@ -2,6 +2,7 @@ from uuid import UUID
 
 from applications.users.models import UserModel
 
+
 class UserSelector:
     @classmethod
     async def get_by_uid(cls, user_uid: UUID | str) -> UserModel:

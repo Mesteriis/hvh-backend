@@ -52,19 +52,19 @@ class PBKDF2SHA256PasswordHasher(BasePasswordHasher):
     digest = hashlib.sha256
 
 
-hasher = PBKDF2SHA256PasswordHasher()
+HASHER = PBKDF2SHA256PasswordHasher()
 
 
 def verify_and_update_password(plain_password: str, hashed_password: str) -> tuple[bool, str]:
     """
     Verifies the password by comparing it with the hash and returns whether the hash needs to be updated.
     """
-    verified = hasher.verify(plain_password, hashed_password)
+    verified = HASHER.verify(plain_password, hashed_password)
     if verified:
         # Check if the hash needs to be updated (e.g., iterations count has changed)
         algorithm, iterations, salt, _ = hashed_password.split("$", 3)
-        if int(iterations) != hasher.iterations:
-            new_hash = hasher.encode(plain_password, salt)
+        if int(iterations) != HASHER.iterations:
+            new_hash = HASHER.encode(plain_password, salt)
             return True, new_hash
         return True, hashed_password
     return False, hashed_password
@@ -74,8 +74,8 @@ def get_password_hash(password: str) -> str:
     """
     Generates a hash of the password using the selected scheme.
     """
-    salt = hasher.generate_salt()
-    return hasher.encode(password, salt)
+    salt = HASHER.generate_salt()
+    return HASHER.encode(password, salt)
 
 
 def generate_password() -> str:

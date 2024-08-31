@@ -2,7 +2,7 @@ import pytest
 
 from applications.users.models import UserModel
 from core.config import settings
-from tests._inventory import assert_response
+from tests.inventory import assert_response
 
 pytestmark = pytest.mark.api
 

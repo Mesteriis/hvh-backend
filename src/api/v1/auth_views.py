@@ -1,8 +1,7 @@
-from fastapi import APIRouter, HTTPException
-
-from applications.users.auth.schemas import JWTPairToken, CredentialsSchema, RefreshJWTToken
+from applications.users.auth.schemas import CredentialsSchema, JWTPairToken, RefreshJWTToken
 from applications.users.auth.utils.contrib import authenticate
 from applications.users.auth.utils.jwt import get_jwt_pair_from_user, get_jwt_pair_with_userid_from_refresh_token
+from fastapi import APIRouter, HTTPException
 
 auth_router = APIRouter()
 
@@ -16,7 +15,7 @@ async def access_token(credentials: CredentialsSchema):
         raise HTTPException(status_code=400, detail="Inactive user")
 
     data = get_jwt_pair_from_user(user)
-    data['user_id'] = str(user.id)
+    data["user_id"] = str(user.id)
     return data
 
 

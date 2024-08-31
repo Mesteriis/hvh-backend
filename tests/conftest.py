@@ -15,9 +15,9 @@ DATABASE_URL = settings.db_uri
 settings.init_logger = False
 
 from core.init_app import App  # noqa
-from tests._inventory import drop_database, create_database  # noqa
-from tests._inventory import AsyncApiTestClient  # noqa
-from tests._inventory import set_level_logging  # noqa
+from tests.inventory import drop_database, create_database  # noqa
+from tests.inventory import AsyncApiTestClient  # noqa
+from tests.inventory import set_level_logging  # noqa
 from tests.settings import pytest_settings  # noqa
 
 pytest_plugins = pytest_settings.pytest_plugins
@@ -95,3 +95,19 @@ async def client():
     app.dependency_overrides[get_session] = override_get_session
     async with AsyncApiTestClient(app=app, base_url='http://test') as client:
         yield client
+
+
+# b-case fixtures
+@pytest.fixture()
+def yt_url_video():
+    return "https://www.youtube.com/watch?v=2WZ5mN_tcAg"
+
+
+@pytest.fixture()
+def yt_url_playlist():
+    return "https://www.youtube.com/playlist?list=PLySj34Zkq0TAdQTPMeGTGZafX-kqgoYbT"
+
+
+@pytest.fixture()
+def yt_url_channel():
+    return "https://www.youtube.com/channel/UChJ4IOQrs63Y5_Rx5aqolZw"

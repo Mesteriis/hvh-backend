@@ -34,7 +34,6 @@ class UserModelFactory(CustomSQLAlchemyOptions):
 
     class Meta:
         model = UserModel
-        # sqlalchemy_session_factory = AsyncSessionLocal
         # sqlalchemy_session = AsyncSessionLocal()
 
 
@@ -46,7 +45,7 @@ def user_factory() -> type[UserModelFactory]:
 class TaskModelFactory(CustomSQLAlchemyOptions):
     url = factory.Faker("url")
     # owner_id = factory.LazyAttribute( lambda o: run(UserModelFactory.create()).id)
-    owner_id = factory.SubFactory(UserModelFactory)
+    owner = factory.SubFactory(UserModelFactory)
 
     class Meta:
         model = TaskModel

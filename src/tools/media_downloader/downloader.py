@@ -1,10 +1,10 @@
 from enum import Enum
 from pathlib import Path
 
+from applications.youtube.models import YTChannelModel, YTPlaylistModel, YTVideoModel
 from pydantic import AnyHttpUrl
 from yt_dlp import YoutubeDL
 
-from applications.youtube.models import YTVideoModel, YTChannelModel
 from .console_logger import ConsoleLogger
 from .exceptions import UrlUnknownHostError
 from .progress_hooks import console_hook
@@ -95,7 +95,7 @@ class MediaDownloader:
                 self.model = YTChannelModel
             elif self._url.is_playlist:
                 struct = YTPlaylistInfo
-                self.model = YTPlaylist
+                self.model = YTPlaylistModel
             self._info_raw = self._client.extract_info(self._url, download=False)
             self._info = struct.model_validate(self._info_raw)
             return self._info
