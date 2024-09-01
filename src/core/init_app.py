@@ -2,10 +2,10 @@ import logging
 
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.routing import Router
+from starlette.staticfiles import StaticFiles
 
 from api import api_router
 from api.v1.sse_views import dashboard_streams
-from core.config import AppSettings
 from fastapi import FastAPI, APIRouter
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError
@@ -14,12 +14,13 @@ from starlette.middleware.cors import CORSMiddleware
 from .async_logger import DEFAULT_LOGGERS, HandlerItem, init_logger
 from .async_logger.handlers import PrintLog
 from .exceptions import APIException, integrity_error_handler, on_api_exception, validation_exception_handler
+from contants import STATIC_FOLDER
 
 logger = logging.getLogger(__name__)
 
 
 class App(FastAPI):
-    __settings: AppSettings
+    __settings: "AppSettings"
 
     def __init__(self):
         self.__settings = self.get_settings()
@@ -29,9 +30,10 @@ class App(FastAPI):
         self.register_routers()
         self.register_exceptions()
         self.register_middlewares()
+        self.mount_static()
 
     @staticmethod
-    def get_settings() -> AppSettings:
+    def get_settings() -> "AppSettings":
         from core.config import settings
 
         return settings
@@ -65,7 +67,6 @@ class App(FastAPI):
             allow_headers=self.__settings.cors_allow_headers,
         )
 
-
     def init_logger(self):
         handlers = [
             HandlerItem(func=PrintLog()),
@@ -75,3 +76,6 @@ class App(FastAPI):
         init_logger(self, handlers=handlers, loggers=DEFAULT_LOGGERS)
         msg = f"Настройки: {self.__settings.model_dump_json(indent=2)}"
         logger.debug(msg)
+
+    def mount_static(self):
+        self.mount('/static', StaticFiles(directory=STATIC_FOLDER), name='static')

@@ -4,7 +4,7 @@ from pydantic import UUID4, BaseModel
 
 
 class CredentialsSchema(BaseModel):
-    email: str | None | None = None
+    email: str
     password: str
 
 

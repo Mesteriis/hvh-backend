@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSE Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/vendors/themes/bs_darkly/bootstrap.css">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!--    <link rel="stylesheet" href="/static/vendors/themes/bs_darkly/_bootswatch.scss">-->
+    <!--    <link rel="stylesheet" href="/static/vendors/themes/bs_darkly/_variables.scss">-->
+
+</head>
+<body>
+<div id="app">[[]]</div>
+<!--        <v-app>-->
+<!--            <v-app-bar>-->
+<!--                NAVIGATION BAR STUFF HERE-->
+<!--            </v-app-bar>-->
+
+<!--            {% block content %}{% endblock %}-->
+<!--        </v-app>-->
+<div class="container mt-3 main_aria">
+    <div class="input-group">
+        <input id="login" type="text" class="form-control" placeholder="Username" aria-label="Username">
+        <input id="password" type="password" class="form-control" placeholder="Password" aria-label="Password">
+        <button id="loginBtn" class="btn btn-primary">Login</button>
+    </div>
+    <div class="control">
+        <select id="streamSelector" class="form-select" aria-label="Default select example">
+            <option selected>Choose stream</option>
+            {% for stream in streams %}
+            <option option="dropdown-item" value={{ stream.id }}>{{ stream.name }}</option>
+            {% endfor %}
+        </select>
+        <button id="connectStreamBtn" class="btn btn-primary">Connect</button>
+        <button id="disconnectStreamBtn" class="btn btn-danger">Disconnect</button>
+        <div class="form-check py-2">
+            <input id="isInterceptMsg" class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">
+            <label class="form-check-label" for="flexCheckIndeterminate">
+                Intercept
+            </label>
+        </div>
+    </div>
+
+    <div class="streams_wrapper">
+
+    </div>
+</div>
+
+<style>
+    .main_aria {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .control {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    /*body {*/
+    /*    background: #efefef;*/
+    /*}*/
+
+    /*pre {*/
+    /*    background-color: ghostwhite;*/
+    /*    border: 1px solid silver;*/
+    /*    padding: 10px 20px;*/
+    /*    border-radius: 4px;*/
+    /*    width: 25%;*/
+    /*    margin: 20px auto;*/
+    /*}*/
+</style>
+
+<script defer>
+
+    Object.prototype.pprint = function () {
+        let jsonLine = /^( *)("[\w]+": )?("[^"]*"|[\w.+-]*)?([,[{])?$/mg;
+        let replacer = function (match, pIndent, pKey, pVal, pEnd) {
+            let key = '<span class="json-key" style="color: brown">',
+                val = '<span class="json-value" style="color: navy">',
+                str = '<span class="json-string" style="color: olive">',
+                r = pIndent || '';
+            if (pKey)
+                r = r + key + pKey.replace(/[": ]/g, '') + '</span>: ';
+            if (pVal)
+                r = r + (pVal[0] == '"' ? str : val) + pVal + '</span>';
+            return r + (pEnd || '');
+        };
+
+        return JSON.stringify(this, null, 3)
+            .replace(/&/g, '&amp;').replace(/\\"/g, '&quot;')
+            .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(jsonLine, replacer);
+    }
+
+    const streamsMap = {};
+    for (let stream of JSON.parse('{{ streams|tojson }}')) {
+        streamsMap[stream.id] = stream;
+    }
+    const loginBtn = document.querySelector('#loginBtn');
+    const loginInput = document.querySelector('#login');
+    const passwordInput = document.querySelector('#password');
+    const streamsSelect = document.querySelector('#streamSelector');
+    const streamsWrapper = document.querySelector('.streams_wrapper');
+    const connectStreamBtn = document.querySelector('#connectStreamBtn');
+    const disconnectStreamBtn = document.querySelector('#disconnectStreamBtn');
+    const isInterceptMsg = document.querySelector('#isInterceptMsg');
+
+    let accessToken = null;
+    let accessExpirationAt = null;
+    let refreshToken = null;
+    let refreshExpirationAt = null;
+    var app = new Vue({
+        el: '#app',
+        delimiter: ['[[', ']]'],
+        data: {
+            message: 'Hello from Vue.js!'
+        }
+    });
+
+    loginBtn.addEventListener('click', () => {
+        axios.post('{{auth_url}}', {
+            email: loginInput.value,
+            password: passwordInput.value
+        }, headers = {
+            'Content-Type': 'application/json'
+        })
+            .then(function (response) {
+                accessToken = response.data.access_token;
+                accessExpirationAt = response.data.access_expiration_at;
+                refreshToken = response.data.refresh_token;
+                refreshExpirationAt = response.data.refresh_expiration_at;
+                console.log(response);
+            })
+            .catch(function (error) {
+                console.error(error);
+            });
+    });
+    const getStreamAxios = () => {
+        axios.get('https://my-domain.com/api/getStream', {
+            headers: {
+                'Accept': 'text/event-stream',
+                'Authorization': `Bearer ${token}`
+            },
+            responseType: 'stream',
+            adapter: 'fetch', // <- this option can also be set in axios.create()
+        })
+            .then(async (response) => {
+                console.log('axios got a response');
+                const stream = response.data;
+
+                // consume response
+                const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
+                while (true) {
+                    const {value, done} = await reader.read();
+                    if (done) break;
+                    console.log(value);
+                }
+            })
+        // catch/etc.
+    }
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+</body>
+</html>

@@ -89,6 +89,7 @@ async def dashboard_streams(request: Request):
 
     context = {
         "streams": get_streams(request.app.routes),
+        "auth_url": request.app.url_path_for('access_token'),
     }
     return templates.TemplateResponse(
         request=request, name=template_name, context=context
