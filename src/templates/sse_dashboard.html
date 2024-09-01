@@ -38,7 +38,7 @@
         </div>
     </div>
 
-    <div v-html="msg" v-if="messages.length > 0" class="streams_wrapper">
+    <div v-html="msg" v-if="messages.length > 0" class="streams_wrapper w-100">
     </div>
 </div>
 
@@ -87,13 +87,16 @@
                         r = r + (pVal[0] == '"' ? str : val) + pVal + '</span>';
                     return r + (pEnd || '');
                 };
-                let t = []
-                t.length
-                let result = document.createElement('pre');
-                result.innerHTML = JSON.stringify(this.messages, null, 3)
-                    .replace(/&/g, '&amp;').replace(/\\"/g, '&quot;')
-                    .replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                    .replace(jsonLine, replacer);
+
+                let result = document.createElement('div');
+                for (let message of this.messages) {
+                    let pre = document.createElement('pre');
+                    pre.innerHTML = JSON.stringify(message, null, 3)
+                        .replace(/&/g, '&amp;').replace(/\\"/g, '&quot;')
+                        .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                        .replace(jsonLine, replacer);
+                    result.appendChild(pre);
+                }
                 return result.outerHTML;
             }
         },
@@ -127,9 +130,6 @@
                 this.is_authenticated = false;
             },
             connectStream() {
-                console.log('connectStream');
-                console.log(this.streamId)
-                console.log(this.selectedStream)
                 const THIS = this;
                 axios.get(this.selectedStream.url, {
                     headers: {
@@ -149,7 +149,6 @@
                             if (done) break;
                             const parseText = (text) => {
                                 const lines = text.split('\n');
-                                console.log(lines);
                                 result = {};
                                 lines.forEach(line => {
                                     if (line === '') return;
@@ -157,7 +156,8 @@
                                     let pair = line.split(': ');
                                     result[pair[0]] = pair[1];
                                 });
-                                THIS.messages.push(result);
+                                if (result) THIS.messages.push(result);
+
                             }
                             parseText(value);
                         }
@@ -191,14 +191,14 @@
     /*    background: #efefef;*/
     /*}*/
 
-    /*pre {*/
-    /*    background-color: ghostwhite;*/
-    /*    border: 1px solid silver;*/
-    /*    padding: 10px 20px;*/
-    /*    border-radius: 4px;*/
-    /*    width: 25%;*/
-    /*    margin: 20px auto;*/
-    /*}*/
+    pre {
+        background-color: ghostwhite;
+        border: 1px solid silver;
+        padding: 10px 20px;
+        border-radius: 4px;
+        width: 100%;
+        margin: 20px auto;
+    }
 </style>
 </body>
 </html>
