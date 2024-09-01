@@ -1,4 +1,5 @@
 import asyncio
+import json
 from tempfile import template
 
 from fastapi import APIRouter, HTTPException
@@ -18,12 +19,12 @@ fake_db = {
 }
 
 router_sse = APIRouter(tags=["sse"])
-STREAM_DELAY = 1  # second
+STREAM_DELAY = 5  # second
 RETRY_TIMEOUT = 15000  # milliseconds
 
 
 def new_messages():
-    return {"event": "new_message", "id": "1", "data": fake_db['1']}
+    return {"event": "new_message", "id": "1", "data": "Hello, world!"}
 
 
 @router_sse.get("/main_stream")
