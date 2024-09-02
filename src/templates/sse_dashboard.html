@@ -9,7 +9,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/static/vendors/themes/bs_darkly/bootstrap.css">
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <!--    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>-->
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 
 </head>
@@ -23,23 +22,27 @@
                aria-label="Password">
         <button id="loginBtn" @click="login" class="btn btn-primary">Login</button>
     </div>
-    <div class="d-flex justify-content-between gap-3 w-50">
-        <select v-model="streamId" class="form-select w-25" aria-label="Default select example">
-            <option selected>Choose stream</option>
-            <option v-for="stream in streams" :key="stream.id" :value="stream.id">[[stream.name]]</option>
+    <div v-if="streams" class="d-flex justify-content-between w-100 gap-3">
+        <select v-model="streamId" class="form-select w-75" aria-label="Select streams">
+            <option v-for="stream in streams" :key="stream.id" :value="stream.id">[[stream.name]] (URL:
+                [[stream.url]])
+            </option>
         </select>
-        <button @click="connectStream" class="btn btn-primary">Connect</button>
-        <button id="disconnectStreamBtn" class="btn btn-danger">Disconnect</button>
-        <div class="form-check py-2">
-            <input id="isInterceptMsg" class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">
-            <label class="form-check-label" for="flexCheckIndeterminate">
-                Intercept
-            </label>
+        <div class="d-flex justify-content-between gap-3 w-25">
+            <button @click="connectStream" class="btn btn-outline-primary w-100">Connect</button>
+            <button @click="disconnectStream" class="btn btn-outline-danger w-100">Disconnect</button>
+            <div class="form-check py-2">
+                <div class="form-check form-switch">
+                    <input v-model="isIntercept" class="form-check-input" type="checkbox" role="switch"
+                           id="isIntercept">
+                    <label class="form-check-label" for="isIntercept">Intercept</label>
+                </div>
+            </div>
         </div>
     </div>
+ <div v-html="msg" v-if="messages.length > 0" class="streams_wrapper w-100">
+        </div>
 
-    <div v-html="msg" v-if="messages.length > 0" class="streams_wrapper w-100">
-    </div>
 </div>
 
 
@@ -53,15 +56,16 @@
                 password: 'q1w2e3w2e3',
                 streams: JSON.parse('{{ streams|tojson }}'),
                 is_authenticated: true,
-                streamId: 1,
+                streamId: JSON.parse('{{ streams|tojson }}')[0].id,
                 token: {
                     accessToken: '',
                     accessExpirationAt: '',
                     refreshToken: '',
                     refreshExpirationAt: ''
                 },
-                messages: [
-                ]
+                messages: [],
+                isIntercept: false,
+                close_connection: false
             }
         },
         computed: {
@@ -73,6 +77,40 @@
             },
             selectedStream() {
                 return this.streamsMap[this.streamId];
+            },
+            prettyPrint(text) {
+                console.log(text);
+                let jsonLine = /^( *)("[\w]+": )?("[^"]*"|[\w.+-]*)?([,[{])?$/mg;
+                let replacer = function (match, pIndent, pKey, pVal, pEnd) {
+                    let key = '<span class="json-key" style="color: brown">',
+                        val = '<span class="json-value" style="color: navy">',
+                        str = '<span class="json-string" style="color: olive">',
+                        r = pIndent || '';
+                    if (pKey)
+                        r = r + key + pKey.replace(/[": ]/g, '') + '</span>: ';
+                    if (pVal)
+                        r = r + (pVal[0] == '"' ? str : val) + pVal + '</span>';
+                    return r + (pEnd || '');
+                };
+
+                let result = document.createElement('div');
+                let pre = document.createElement('pre');
+                pre.innerHTML = JSON.stringify(text, null, 3)
+                        .replace(/&/g, '&amp;').replace(/\\"/g, '&quot;')
+                        .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                        .replace(jsonLine, replacer);
+                    result.appendChild(pre);
+                return pre.innerHTML;
+                // for (let message of this.messages) {
+                //     let pre = document.createElement('pre');
+                //     pre.innerHTML = JSON.stringify(message, null, 3)
+                //         .replace(/&/g, '&amp;').replace(/\\"/g, '&quot;')
+                //         .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                //         .replace(jsonLine, replacer);
+                //     result.appendChild(pre);
+                // }
+                // console.log(result.innerHTML);
+                // return result.innerHTML;
             },
             msg() {
                 let jsonLine = /^( *)("[\w]+": )?("[^"]*"|[\w.+-]*)?([,[{])?$/mg;
@@ -97,7 +135,8 @@
                         .replace(jsonLine, replacer);
                     result.appendChild(pre);
                 }
-                return result.outerHTML;
+                console.log(result.innerHTML);
+                return result.innerHTML;
             }
         },
         methods: {
@@ -131,20 +170,29 @@
             },
             connectStream() {
                 const THIS = this;
+                this.close_connection = false;
                 axios.get(this.selectedStream.url, {
                     headers: {
                         'Accept': 'text/event-stream',
                         'Authorization': `Bearer ${this.token.accessToken}`
                     },
+                    params: {is_intercept: this.isIntercept},
                     responseType: 'stream',
-                    adapter: 'fetch', // <- this option can also be set in axios.create()
+                    adapter: 'fetch',
                 })
                     .then(async (response) => {
                         const stream = response.data;
-                        console.log(stream);
-                        // consume response
+                        THIS.connect = stream
+
                         const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
-                        while (true) {
+                        while (THIS.connect) {
+                            if (THIS.close_connection) {
+                                await reader.cancel().then(() => {
+                                    console.log('Connection closed');
+                                    reader.releaseLock();
+                                });
+                                return;
+                            }
                             const {value, done} = await reader.read();
                             if (done) break;
                             const parseText = (text) => {
@@ -152,17 +200,27 @@
                                 result = {};
                                 lines.forEach(line => {
                                     if (line === '') return;
-                                    line = line.replace('\r', '');
-                                    let pair = line.split(': ');
-                                    result[pair[0]] = pair[1];
+                                    if (line.startsWith('data:')) {
+                                        line = line.slice(5);
+                                        data = JSON.parse(line.replace(/'/g, '"'));
+                                        result['data'] = data;
+                                    } else {
+                                        line = line.replace('\r', '');
+                                        let pair = line.split(': ');
+                                        result[pair[0]] = pair[1];
+                                    }
+
                                 });
-                                if (result) THIS.messages.push(result);
+                                if (result) THIS.messages.unshift(result);
 
                             }
-                            parseText(value);
+                            if (!value.startsWith(':')) parseText(value);
                         }
                     })
             },
+            disconnectStream() {
+                this.close_connection = true;
+            }
         },
     });
 
@@ -190,6 +248,16 @@
     /*body {*/
     /*    background: #efefef;*/
     /*}*/
+    .list-enter-active,
+    .list-leave-active {
+        transition: all 0.5s ease;
+    }
+
+    .list-enter-from,
+    .list-leave-to {
+        opacity: 0;
+        transform: translateX(30px);
+    }
 
     pre {
         background-color: ghostwhite;

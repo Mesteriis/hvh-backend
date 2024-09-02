@@ -3,6 +3,7 @@ import json
 from tempfile import template
 
 from fastapi import APIRouter, HTTPException
+from redis.commands.search.reducers import count
 from starlette.requests import Request
 from sse_starlette.sse import EventSourceResponse
 from starlette.templating import Jinja2Templates
@@ -21,10 +22,12 @@ fake_db = {
 router_sse = APIRouter(tags=["sse"])
 STREAM_DELAY = 5  # second
 RETRY_TIMEOUT = 15000  # milliseconds
+count = 0
 
-
-def new_messages():
-    return {"event": "new_message", "id": "1", "data": "Hello, world!"}
+def new_messages(is_intercept: bool = False):
+    global count
+    count += 1
+    return {"event": "new_message", "id": count, "data": "Hello, world!", "is_intercept": "is_intercept"}
 
 
 @router_sse.get("/main_stream")
@@ -34,13 +37,13 @@ async def main_stream(request: Request):
             if await request.is_disconnected():
                 break
 
-            message = new_messages()
+            message = new_messages(request.query_params.get('is_intercept') == 'true')
             if message:
                 yield {
                     "event": message['event'],
                     "id": message['id'],
                     "retry": RETRY_TIMEOUT,
-                    "data": message['data']
+                    "data": message,
                 }
 
             await asyncio.sleep(STREAM_DELAY)
@@ -69,7 +72,7 @@ async def second_stream(request: Request):# Simulate a new message
     return EventSourceResponse(event_generator())
 
 
-async def dashboard_streams(request: Request):
+def dashboard_streams(request: Request):
     template_name = "sse_dashboard.html"
     templates = Jinja2Templates(directory=TEMPLATES_FOLDER)
 

@@ -29,7 +29,7 @@ class App(FastAPI):
         #     self.init_logger()
         self.register_routers()
         self.register_exceptions()
-        self.register_middlewares()
+        # self.register_middlewares()
         self.mount_static()
 
     @staticmethod
