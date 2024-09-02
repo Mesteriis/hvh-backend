@@ -101,16 +101,6 @@
                         .replace(jsonLine, replacer);
                     result.appendChild(pre);
                 return pre.innerHTML;
-                // for (let message of this.messages) {
-                //     let pre = document.createElement('pre');
-                //     pre.innerHTML = JSON.stringify(message, null, 3)
-                //         .replace(/&/g, '&amp;').replace(/\\"/g, '&quot;')
-                //         .replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                //         .replace(jsonLine, replacer);
-                //     result.appendChild(pre);
-                // }
-                // console.log(result.innerHTML);
-                // return result.innerHTML;
             },
             msg() {
                 let jsonLine = /^( *)("[\w]+": )?("[^"]*"|[\w.+-]*)?([,[{])?$/mg;
@@ -135,7 +125,6 @@
                         .replace(jsonLine, replacer);
                     result.appendChild(pre);
                 }
-                console.log(result.innerHTML);
                 return result.innerHTML;
             }
         },
