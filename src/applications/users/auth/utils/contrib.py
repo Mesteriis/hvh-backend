@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 
 import jwt
+from fastapi import HTTPException
+
 from applications.users.auth.schemas import CredentialsSchema
 from applications.users.auth.utils.password import verify_and_update_password
 from applications.users.models import UserModel
@@ -37,13 +39,10 @@ def verify_password_reset_token(token) -> str | None:
 
 
 async def authenticate(credentials: CredentialsSchema) -> UserModel | None:
-    if credentials.email:
+    try:
         user = await UserSelector.get_by_email(credentials.email)
-    else:
-        return None
-
-    if user is None:
-        return None
+    except UserModel.NotFoundError:
+        raise HTTPException(status_code=400, detail="Incorrect email or password")
 
     verified, updated_password_hash = verify_and_update_password(credentials.password, user.hashed_password)
 

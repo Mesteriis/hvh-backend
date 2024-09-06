@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSE Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/vendors/themes/bs_darkly/bootstrap.css">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+</head>
+<body>
+<div id="app" class="gap-3 mt-3 p-3">
+    <button v-if="is_authenticated" @click="logout" class="btn btn-outline-danger w-100">logout</button>
+    <div class="d-flex justify-content-between gap-3" v-else>
+        <input id="login" v-model:value="username" type="text" class="form-control" placeholder="Username"
+               aria-label="Username">
+        <input id="password" v-model:value="password" type="password" class="form-control" placeholder="Password"
+               aria-label="Password">
+        <button id="loginBtn" @click="login" class="btn btn-primary">Login</button>
+    </div>
+    <div v-if="streams" class="d-flex justify-content-between w-100 gap-3">
+        <select v-model="streamId" class="form-select w-75" aria-label="Select streams">
+            <option v-for="stream in streams" :key="stream.id" :value="stream.id">[[stream.name]] (URL:
+                [[stream.url]])
+            </option>
+        </select>
+        <div class="d-flex justify-content-between gap-3 w-25">
+            <button @click="connectStream" class="btn btn-outline-primary w-100">Connect</button>
+            <button @click="disconnectStream" class="btn btn-outline-danger w-100">Disconnect</button>
+            <div class="form-check py-2">
+                <div class="form-check form-switch">
+                    <input v-model="isIntercept" class="form-check-input" type="checkbox" role="switch"
+                           id="isIntercept">
+                    <label class="form-check-label" for="isIntercept">Intercept</label>
+                </div>
+            </div>
+        </div>
+    </div>
+ <div v-html="msg" v-if="messages.length > 0" class="streams_wrapper w-100">
+        </div>
+
+</div>
+
+
+<script defer>
+    new Vue({
+        el: '#app',
+        delimiters: ['[[', ']]'],
+        data() {
+            return {
+                username: 'avm@sh-inc.ru',
+                password: 'q1w2e3w2e3',
+                streams: JSON.parse('{{ streams|tojson }}'),
+                is_authenticated: true,
+                streamId: JSON.parse('{{ streams|tojson }}')[0].id,
+                token: {
+                    accessToken: '',
+                    accessExpirationAt: '',
+                    refreshToken: '',
+                    refreshExpirationAt: ''
+                },
+                messages: [],
+
+                isIntercept: false,
+                close_connection: false
+            }
+        },
+        computed: {
+            streamsMap() {
+                return this.streams.reduce((acc, stream) => {
+                    acc[stream.id] = stream;
+                    return acc;
+                }, {});
+            },
+            selectedStream() {
+                return this.streamsMap[this.streamId];
+            },
+            prettyPrint(text) {
+                console.log(text);
+                let jsonLine = /^( *)("[\w]+": )?("[^"]*"|[\w.+-]*)?([,[{])?$/mg;
+                let replacer = function (match, pIndent, pKey, pVal, pEnd) {
+                    let key = '<span class="json-key" style="color: brown">',
+                        val = '<span class="json-value" style="color: navy">',
+                        str = '<span class="json-string" style="color: olive">',
+                        r = pIndent || '';
+                    if (pKey)
+                        r = r + key + pKey.replace(/[": ]/g, '') + '</span>: ';
+                    if (pVal)
+                        r = r + (pVal[0] == '"' ? str : val) + pVal + '</span>';
+                    return r + (pEnd || '');
+                };
+
+                let result = document.createElement('div');
+                let pre = document.createElement('pre');
+                pre.innerHTML = JSON.stringify(text, null, 3)
+                        .replace(/&/g, '&amp;').replace(/\\"/g, '&quot;')
+                        .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                        .replace(jsonLine, replacer);
+                    result.appendChild(pre);
+                return pre.innerHTML;
+            },
+            msg() {
+                let jsonLine = /^( *)("[\w]+": )?("[^"]*"|[\w.+-]*)?([,[{])?$/mg;
+                let replacer = function (match, pIndent, pKey, pVal, pEnd) {
+                    let key = '<span class="json-key" style="color: brown">',
+                        val = '<span class="json-value" style="color: navy">',
+                        str = '<span class="json-string" style="color: olive">',
+                        r = pIndent || '';
+                    if (pKey)
+                        r = r + key + pKey.replace(/[": ]/g, '') + '</span>: ';
+                    if (pVal)
+                        r = r + (pVal[0] == '"' ? str : val) + pVal + '</span>';
+                    return r + (pEnd || '');
+                };
+
+                let result = document.createElement('div');
+                for (let message of this.messages) {
+                    let pre = document.createElement('pre');
+                    pre.innerHTML = JSON.stringify(message, null, 3)
+                        .replace(/&/g, '&amp;').replace(/\\"/g, '&quot;')
+                        .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                        .replace(jsonLine, replacer);
+                    result.appendChild(pre);
+                }
+                return result.innerHTML;
+            }
+        },
+        methods: {
+            login() {
+                const THIS = this;
+                axios.post('{{auth_url}}', {
+                    email: this.username,
+                    password: this.password
+                }, headers = {
+                    'Content-Type': 'application/json'
+                })
+                    .then(function (response) {
+                        THIS.token.accessToken = response.data.access;
+                        THIS.token.accessExpirationAt = response.data.access_expiration_at;
+                        THIS.token.refreshToken = response.data.refresh;
+                        THIS.token.refreshExpirationAt = response.data.refresh_expiration_at;
+                        THIS.is_authenticated = true;
+                    })
+                    .catch(function (error) {
+                        console.error(error);
+                    });
+            },
+            logout() {
+                this.token = {
+                    accessToken: '',
+                    accessExpirationAt: '',
+                    refreshToken: '',
+                    refreshExpirationAt: ''
+                };
+                this.is_authenticated = false;
+            },
+            connectStream() {
+                const THIS = this;
+                this.close_connection = false;
+                axios.get(this.selectedStream.url, {
+                    headers: {
+                        'Accept': 'text/event-stream',
+                        'Authorization': `Bearer ${this.token.accessToken}`
+                    },
+                    params: {is_intercept: this.isIntercept},
+                    responseType: 'stream',
+                    adapter: 'fetch',
+                })
+                    .then(async (response) => {
+                        const stream = response.data;
+                        THIS.connect = stream
+
+                        const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
+                        while (THIS.connect) {
+                            if (THIS.close_connection) {
+                                await reader.cancel().then(() => {
+                                    console.log('Connection closed');
+                                    reader.releaseLock();
+                                });
+                                return;
+                            }
+                            const {value, done} = await reader.read();
+                            if (done) break;
+                            const parseText = (text) => {
+                                const lines = text.split('\n');
+                                result = {};
+                                lines.forEach(line => {
+                                    if (line === '') return;
+                                    if (line.startsWith('data:')) {
+                                        line = line.slice(5);
+                                        data = JSON.parse(line.replace(/'/g, '"'));
+                                        result['data'] = data;
+                                    } else {
+                                        line = line.replace('\r', '');
+                                        let pair = line.split(': ');
+                                        result[pair[0]] = pair[1];
+                                    }
+
+                                });
+                                if (result) THIS.messages.unshift(result);
+
+                            }
+                            if (!value.startsWith(':')) parseText(value);
+                        }
+                    })
+            },
+            disconnectStream() {
+                this.close_connection = true;
+            }
+        },
+    });
+
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+<style>
+    #app {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .control {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    /*body {*/
+    /*    background: #efefef;*/
+    /*}*/
+    .list-enter-active,
+    .list-leave-active {
+        transition: all 0.5s ease;
+    }
+
+    .list-enter-from,
+    .list-leave-to {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    pre {
+        background-color: ghostwhite;
+        border: 1px solid silver;
+        padding: 10px 20px;
+        border-radius: 4px;
+        width: 100%;
+        margin: 20px auto;
+    }
+</style>
+</body>
+</html>
