@@ -1,28 +1,26 @@
 import asyncio
-import json
-from tempfile import template
-
-from fastapi import APIRouter, HTTPException
-from redis.commands.search.reducers import count
-from starlette.requests import Request
-from sse_starlette.sse import EventSourceResponse
-from starlette.templating import Jinja2Templates
 
 from contants import TEMPLATES_FOLDER
+from fastapi import APIRouter
+from redis.commands.search.reducers import count
+from sse_starlette.sse import EventSourceResponse
+from starlette.requests import Request
+from starlette.templating import Jinja2Templates
 
 # Simulated database
 fake_db = {
-    '1': {'name': 'John', 'age': 25},
-    '2': {'name': 'Jane', 'age': 22},
-    '3': {'name': 'Jim', 'age': 30},
-    '4': {'name': 'Jack', 'age': 27},
-    '5': {'name': 'Jill', 'age': 24},
+    "1": {"name": "John", "age": 25},
+    "2": {"name": "Jane", "age": 22},
+    "3": {"name": "Jim", "age": 30},
+    "4": {"name": "Jack", "age": 27},
+    "5": {"name": "Jill", "age": 24},
 }
 
 router_sse = APIRouter(tags=["sse"])
 STREAM_DELAY = 5  # second
 RETRY_TIMEOUT = 15000  # milliseconds
 count = 0
+
 
 def new_messages(is_intercept: bool = False):
     global count
@@ -37,11 +35,11 @@ async def main_stream(request: Request):
             if await request.is_disconnected():
                 break
 
-            message = new_messages(request.query_params.get('is_intercept') == 'true')
+            message = new_messages(request.query_params.get("is_intercept") == "true")
             if message:
                 yield {
-                    "event": message['event'],
-                    "id": message['id'],
+                    "event": message["event"],
+                    "id": message["id"],
                     "retry": RETRY_TIMEOUT,
                     "data": message,
                 }
@@ -52,7 +50,7 @@ async def main_stream(request: Request):
 
 
 @router_sse.get("/second_stream")
-async def second_stream(request: Request):# Simulate a new message
+async def second_stream(request: Request):  # Simulate a new message
     async def event_generator():
         while True:
             if await request.is_disconnected():
@@ -60,12 +58,7 @@ async def second_stream(request: Request):# Simulate a new message
 
             message = new_messages()
             if message:
-                yield {
-                    "event": message['event'],
-                    "id": message['id'],
-                    "retry": RETRY_TIMEOUT,
-                    "data": message['data']
-                }
+                yield {"event": message["event"], "id": message["id"], "retry": RETRY_TIMEOUT, "data": message["data"]}
 
             await asyncio.sleep(STREAM_DELAY)
 
@@ -80,20 +73,16 @@ def dashboard_streams(request: Request):
         streams = []
         for route in routes:
             # TODO: Fix this check isinstance(route, APIRoute)
-            if hasattr(route, 'tags') and "sse" in route.tags:
-                streams.append(
-                    {
-                        "id": route.name,
-                        "name": " ".join([el.title() for el in route.name.split('_')]),
-                        "url": route.path
-                    }
-                )
+            if hasattr(route, "tags") and "sse" in route.tags:
+                streams.append({
+                    "id": route.name,
+                    "name": " ".join([el.title() for el in route.name.split("_")]),
+                    "url": route.path,
+                })
         return streams
 
     context = {
         "streams": get_streams(request.app.routes),
-        "auth_url": request.app.url_path_for('access_token'),
+        "auth_url": request.app.url_path_for("access_token"),
     }
-    return templates.TemplateResponse(
-        request=request, name=template_name, context=context
-    )
+    return templates.TemplateResponse(request=request, name=template_name, context=context)

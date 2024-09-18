@@ -1,20 +1,17 @@
 import logging
 
-from starlette.middleware.trustedhost import TrustedHostMiddleware
-from starlette.routing import Router
-from starlette.staticfiles import StaticFiles
-
 from api import api_router
 from api.v1.sse_views import dashboard_streams
-from fastapi import FastAPI, APIRouter
+from contants import STATIC_FOLDER
+from fastapi import APIRouter, FastAPI
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import IntegrityError
 from starlette.middleware.cors import CORSMiddleware
+from starlette.staticfiles import StaticFiles
 
 from .async_logger import DEFAULT_LOGGERS, HandlerItem, init_logger
 from .async_logger.handlers import PrintLog
 from .exceptions import APIException, integrity_error_handler, on_api_exception, validation_exception_handler
-from contants import STATIC_FOLDER
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +47,7 @@ class App(FastAPI):
     @property
     def ssr_router(self):
         root_router = APIRouter(prefix="/ssr", tags=["ssr"])
-        root_router.get('/sse_dashboard')(dashboard_streams)
+        root_router.get("/sse_dashboard")(dashboard_streams)
         return root_router
 
     def register_exceptions(self):
@@ -78,4 +75,4 @@ class App(FastAPI):
         logger.debug(msg)
 
     def mount_static(self):
-        self.mount('/static', StaticFiles(directory=STATIC_FOLDER), name='static')
+        self.mount("/static", StaticFiles(directory=STATIC_FOLDER), name="static")

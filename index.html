@@ -1,155 +1,167 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Three.js Circular Particle Animation with Moving Gap</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: black;
-        }
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: black;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script>
-        let scene, camera, renderer, particleSystem;
-        let particles = [];
-        const PARTICLE_COUNT = 1000;
-        const mouse = new THREE.Vector2();
-        const mouseRadius = 50;
-        let gapAngle = 0; // Угол, где находится "дырка" без частиц
-        const gapSize = Math.PI / 6; // Размер "дырки" (30 градусов)
+      let scene, camera, renderer, particleSystem;
+      let particles = [];
+      const PARTICLE_COUNT = 1000;
+      const mouse = new THREE.Vector2();
+      const mouseRadius = 50;
+      let gapAngle = 0; // Угол, где находится "дырка" без частиц
+      const gapSize = Math.PI / 6; // Размер "дырки" (30 градусов)
 
-        // Инициализация сцены
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 300;
+      // Инициализация сцены
+      function init() {
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(
+          75,
+          window.innerWidth / window.innerHeight,
+          0.1,
+          1000,
+        );
+        camera.position.z = 300;
 
-            renderer = new THREE.WebGLRenderer();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-            // Создание геометрии частиц
-            const geometry = new THREE.BufferGeometry();
-            const vertices = [];
-            const particleMaterial = new THREE.PointsMaterial({
-                color: 0xffffff,
-                size: 3,
-                transparent: true,
-                opacity: 0.8,
-            });
-
-            for (let i = 0; i < PARTICLE_COUNT; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const radius = 150 + Math.random() * 50; // Радиус круга с небольшими отклонениями
-                const x = radius * Math.cos(angle);
-                const y = radius * Math.sin(angle);
-                const z = (Math.random() - 0.5) * 50; // Немного случайного движения вдоль оси Z
-
-                vertices.push(x, y, z);
-
-                particles.push({
-                    angle: angle,
-                    radius: radius,
-                    speed: (Math.random() * 0.01) + 0.002, // Разная скорость частиц
-                    position: new THREE.Vector3(x, y, z),
-                    velocity: new THREE.Vector3(0, 0, 0),
-                });
-            }
-
-            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-
-            // Создание системы частиц
-            particleSystem = new THREE.Points(geometry, particleMaterial);
-            scene.add(particleSystem);
-
-            // Контроллеры для вращения камеры
-            const controls = new THREE.OrbitControls(camera, renderer.domElement);
-
-            // Обработчик движения курсора
-            window.addEventListener('mousemove', onMouseMove, false);
-
-            animate();
-        }
-
-        // Обработчик события движения мыши
-        function onMouseMove(event) {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 0.5;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 0.5;
-            mouse.multiplyScalar(200); // масштабируем координаты мыши для сцены
-        }
-
-        // Анимация
-        function animate() {
-            requestAnimationFrame(animate);
-
-            // Обновляем угол для "дырки"
-            gapAngle += 0.01;
-            if (gapAngle > Math.PI * 2) {
-                gapAngle -= Math.PI * 2;
-            }
-
-            // Обновление позиции частиц
-            const positions = particleSystem.geometry.attributes.position.array;
-            for (let i = 0; i < PARTICLE_COUNT; i++) {
-                const particle = particles[i];
-
-                // Если частица попадает в область "дырки", она пропускается
-                const angleDifference = Math.abs(particle.angle - gapAngle);
-                if (angleDifference < gapSize / 2 || angleDifference > (Math.PI * 2 - gapSize / 2)) {
-                    particle.velocity.multiplyScalar(0.9); // Затухание движения
-                    continue;
-                }
-
-                // Вычисляем круговую траекторию
-                particle.angle += particle.speed;
-                const circularX = particle.radius * Math.cos(particle.angle);
-                const circularY = particle.radius * Math.sin(particle.angle);
-
-                // Огибание курсора
-                const dx = mouse.x - particle.position.x;
-                const dy = mouse.y - particle.position.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-
-                if (dist < mouseRadius) {
-                    const force = (mouseRadius - dist) / mouseRadius;
-                    const angleToMouse = Math.atan2(dy, dx);
-                    particle.velocity.x -= Math.cos(angleToMouse) * force * 10;
-                    particle.velocity.y -= Math.sin(angleToMouse) * force * 10;
-                } else {
-                    // Если частица не взаимодействует с курсором, возвращаем ее к круговой траектории
-                    particle.velocity.x += (circularX - particle.position.x) * 0.02;
-                    particle.velocity.y += (circularY - particle.position.y) * 0.02;
-                }
-
-                // Обновляем позицию частицы
-                particle.position.add(particle.velocity);
-                particle.velocity.multiplyScalar(0.9); // Добавляем затухание скорости
-
-                // Обновление буфера позиций
-                positions[i * 3] = particle.position.x;
-                positions[i * 3 + 1] = particle.position.y;
-                positions[i * 3 + 2] = particle.position.z;
-            }
-            particleSystem.geometry.attributes.position.needsUpdate = true;
-
-            renderer.render(scene, camera);
-        }
-
-        // Изменение размеров окна
-        window.addEventListener('resize', () => {
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
+        // Создание геометрии частиц
+        const geometry = new THREE.BufferGeometry();
+        const vertices = [];
+        const particleMaterial = new THREE.PointsMaterial({
+          color: 0xffffff,
+          size: 3,
+          transparent: true,
+          opacity: 0.8,
         });
 
-        init();
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const radius = 150 + Math.random() * 50; // Радиус круга с небольшими отклонениями
+          const x = radius * Math.cos(angle);
+          const y = radius * Math.sin(angle);
+          const z = (Math.random() - 0.5) * 50; // Немного случайного движения вдоль оси Z
+
+          vertices.push(x, y, z);
+
+          particles.push({
+            angle: angle,
+            radius: radius,
+            speed: Math.random() * 0.01 + 0.002, // Разная скорость частиц
+            position: new THREE.Vector3(x, y, z),
+            velocity: new THREE.Vector3(0, 0, 0),
+          });
+        }
+
+        geometry.setAttribute(
+          "position",
+          new THREE.Float32BufferAttribute(vertices, 3),
+        );
+
+        // Создание системы частиц
+        particleSystem = new THREE.Points(geometry, particleMaterial);
+        scene.add(particleSystem);
+
+        // Контроллеры для вращения камеры
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+        // Обработчик движения курсора
+        window.addEventListener("mousemove", onMouseMove, false);
+
+        animate();
+      }
+
+      // Обработчик события движения мыши
+      function onMouseMove(event) {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 0.5;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 0.5;
+        mouse.multiplyScalar(200); // масштабируем координаты мыши для сцены
+      }
+
+      // Анимация
+      function animate() {
+        requestAnimationFrame(animate);
+
+        // Обновляем угол для "дырки"
+        gapAngle += 0.01;
+        if (gapAngle > Math.PI * 2) {
+          gapAngle -= Math.PI * 2;
+        }
+
+        // Обновление позиции частиц
+        const positions = particleSystem.geometry.attributes.position.array;
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+          const particle = particles[i];
+
+          // Если частица попадает в область "дырки", она пропускается
+          const angleDifference = Math.abs(particle.angle - gapAngle);
+          if (
+            angleDifference < gapSize / 2 ||
+            angleDifference > Math.PI * 2 - gapSize / 2
+          ) {
+            particle.velocity.multiplyScalar(0.9); // Затухание движения
+            continue;
+          }
+
+          // Вычисляем круговую траекторию
+          particle.angle += particle.speed;
+          const circularX = particle.radius * Math.cos(particle.angle);
+          const circularY = particle.radius * Math.sin(particle.angle);
+
+          // Огибание курсора
+          const dx = mouse.x - particle.position.x;
+          const dy = mouse.y - particle.position.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < mouseRadius) {
+            const force = (mouseRadius - dist) / mouseRadius;
+            const angleToMouse = Math.atan2(dy, dx);
+            particle.velocity.x -= Math.cos(angleToMouse) * force * 10;
+            particle.velocity.y -= Math.sin(angleToMouse) * force * 10;
+          } else {
+            // Если частица не взаимодействует с курсором, возвращаем ее к круговой траектории
+            particle.velocity.x += (circularX - particle.position.x) * 0.02;
+            particle.velocity.y += (circularY - particle.position.y) * 0.02;
+          }
+
+          // Обновляем позицию частицы
+          particle.position.add(particle.velocity);
+          particle.velocity.multiplyScalar(0.9); // Добавляем затухание скорости
+
+          // Обновление буфера позиций
+          positions[i * 3] = particle.position.x;
+          positions[i * 3 + 1] = particle.position.y;
+          positions[i * 3 + 2] = particle.position.z;
+        }
+        particleSystem.geometry.attributes.position.needsUpdate = true;
+
+        renderer.render(scene, camera);
+      }
+
+      // Изменение размеров окна
+      window.addEventListener("resize", () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+      });
+
+      init();
     </script>
-</body>
+  </body>
 </html>
