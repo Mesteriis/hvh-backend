@@ -1,13 +1,12 @@
 from datetime import datetime, timedelta
 
 import jwt
-from fastapi import HTTPException
-
 from applications.users.auth.schemas import CredentialsSchema
 from applications.users.auth.utils.password import verify_and_update_password
 from applications.users.models import UserModel
 from applications.users.selectors import UserSelector
 from core.config import settings
+from fastapi import HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from pytz import utc

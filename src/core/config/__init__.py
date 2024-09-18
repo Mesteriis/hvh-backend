@@ -49,8 +49,8 @@ class AppSettings(BaseSettings):
     init_logger: bool = True
 
     cors_allowed_origins: list = [
-                                     "http://localhost:63342",
-                                 ] + decouple.config("CORS_ALLOWED_ORIGINS", default="", cast=str).split(",")
+        "http://localhost:63342",
+    ] + decouple.config("CORS_ALLOWED_ORIGINS", default="", cast=str).split(",")
     cors_allow_credentials: bool = True
     cors_allow_methods: list = ["*"]
     cors_allow_headers: list = ["*"]
