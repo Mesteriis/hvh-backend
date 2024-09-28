@@ -23,13 +23,21 @@ engine = create_async_engine(get_uri(), future=True)
 if "asyncpg" not in str(engine.url):
     raise ValueError("Only async mode is supported")
 
-session_maker = async_sessionmaker(engine, expire_on_commit=True)
-async_session = async_scoped_session(session_maker, scopefunc=asyncio.current_task)
+session_factory = async_sessionmaker(engine, expire_on_commit=True)
 
 
 @asynccontextmanager
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
-    yield async_session
+    scope = {}
+    cur_task = asyncio.current_task()
+
+    if cur_task in scope:
+        yield scope[cur_task]
+    else:
+        scope = {cur_task: session_factory()}
+        yield scope[cur_task]
+    await scope[cur_task].close()
+    del scope[cur_task]
 
 
 Base = declarative_base()
@@ -42,7 +50,7 @@ class BaseManager:
         self._model = model
 
     async def get_by_id(self, id):
-        async with session_maker() as session:
+        async with get_session() as session:
             query = select(self._model).filter_by(id=id)
             instance = await session.execute(query)
             instance = instance.scalar()
@@ -52,7 +60,7 @@ class BaseManager:
                 raise self._model.NotFoundError(f"{self._model.__name__} with id {id} not found")
 
     async def get(self, **kwargs):
-        async with session_maker() as session:
+        async with get_session() as session:
             query = select(self._model).filter_by(**kwargs)
             instance = await session.execute(query)
             instance = instance.scalars().all()
@@ -64,19 +72,19 @@ class BaseManager:
                 raise self._model.NotFoundError(f"{self._model.__name__} with {kwargs} not found")
 
     async def all(self):
-        async with session_maker() as session:
+        async with get_session() as session:
             query = select(self._model)
             instances = await session.execute(query)
             return instances.scalars().all()
 
     async def filter(self, **kwargs):
-        async with session_maker() as session:
+        async with get_session() as session:
             query = select(self._model).filter_by(**kwargs)
             instances = await session.execute(query)
             return instances.scalars().all()
 
     async def get_or_create(self, **kwargs) -> tuple[type[BaseModel], bool]:
-        async with session_maker() as session:
+        async with get_session() as session:
             query = select(self._model).filter_by(**kwargs)
             instance = await session.execute(query)
             instance = instance.scalar()
@@ -89,7 +97,7 @@ class BaseManager:
             return instance, True
 
     async def update_or_create(self, **kwargs) -> tuple[type[BaseModel], bool]:
-        async with session_maker() as session:
+        async with get_session() as session:
             query = select(self._model).filter_by(**kwargs)
             instance = await session.execute(query)
             instance = instance.scalar()
@@ -106,7 +114,7 @@ class BaseManager:
             return instance, True
 
     async def create(self, **kwargs):
-        async with session_maker() as session:
+        async with get_session() as session:
             instance = self._model(**kwargs)
             session.add(instance)
             await session.commit()
@@ -115,7 +123,7 @@ class BaseManager:
 
     @staticmethod
     async def bulk_create(instances):
-        async with session_maker() as session:
+        async with get_session() as session:
             session.add_all(instances)
             await session.commit()
             return instances
@@ -142,7 +150,7 @@ class BaseModel(Base):
 
     @property
     def _session(self):
-        return session_maker
+        return get_session
 
     @hybrid_property
     def pk(self) -> uuid.UUID:

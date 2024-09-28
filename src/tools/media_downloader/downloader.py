@@ -1,5 +1,6 @@
 from enum import Enum
 from pathlib import Path
+from typing import Type
 
 from applications.youtube.models import YTChannelModel, YTPlaylistModel, YTVideoModel
 from pydantic import AnyHttpUrl
@@ -53,7 +54,10 @@ class MediaDownloader:
     _client: YoutubeDL
     _options: dict = None
     _info_raw: dict
-    _info: YTVideoInfo | YTChannelInfo | YTPlaylistInfo
+    _info: YTVideoInfo | YTChannelInfo | YTPlaylistInfo | None = None
+
+    __model: Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel] | None = None
+    __struct: Type[YTVideoInfo] | Type[YTChannelInfo] | Type[YTPlaylistInfo] | None = None
 
     def __init__(self, url: AnyHttpUrl | str, media_folder: Path, options: dict | None = None):
         """
@@ -86,18 +90,17 @@ class MediaDownloader:
         Extracts information from the specified URL.
         """
         if self._url.source == UrlHostEnum.youtube:
-            struct = None
             if self._url.is_video:
-                struct = YTVideoInfo
-                self.model = YTVideoModel
+                self.__struct = YTVideoInfo
+                self.__model = YTVideoModel
             elif self._url.is_channel:
-                struct = YTChannelInfo
-                self.model = YTChannelModel
-            elif self._url.is_playlist:
-                struct = YTPlaylistInfo
-                self.model = YTPlaylistModel
+                self.__struct = YTChannelInfo
+                self.__model = YTChannelModel
+            else:
+                self.__struct = YTPlaylistInfo
+                self.__model = YTPlaylistModel
             self._info_raw = self._client.extract_info(self._url, download=False)
-            self._info = struct.model_validate(self._info_raw)
+            self._info = self.__struct.model_validate(self._info_raw)
             return self._info
 
         raise UrlUnknownHostError(f"Unknown host: {self._url.source}")

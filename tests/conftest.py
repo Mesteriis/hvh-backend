@@ -58,10 +58,10 @@ async def event_loop():
 
 @pytest.fixture(scope='session')
 def alembic_config(setup_test_database):
-    alembic_cfg = Config(str(ROOT_DIR.parent / 'alembic.ini'))
+    alembic_cfg = Config(str(ROOT_DIR / 'alembic.ini'))
     alembic_cfg.set_main_option('sqlalchemy.url', DATABASE_URL)
     alembic_cfg.set_main_option('prepend_sys_path', str(APP_FOLDER))
-    alembic_cfg.set_main_option('script_location', str(ROOT_DIR.parent / 'migrations'))
+    alembic_cfg.set_main_option('script_location', str(ROOT_DIR / 'migrations'))
     return alembic_cfg
 
 
