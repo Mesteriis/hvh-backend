@@ -174,6 +174,23 @@ class ClassFinder:
         logger_msg.append("\033[37mDynamic import finished.\033[0m")
         self.logger.info("\n".join(logger_msg))
 
+    def build_tortoise_imports(self) -> list[str]:
+        """
+        Builds import statements for Tortoise ORM models.
+
+        Returns:
+            list[str]: A list of import statements for Tortoise ORM models.
+        """
+        classes = self.find_all_classes()
+        imports = self.generate_import_statements(classes)
+        import_statements = []
+        for module_path, class_name in imports:
+            import_statements.append(f"{module_path}")
+
+        return list(set(import_statements))
+
+
+
     def setup_logger(self) -> logging.Logger:
         """
         Sets up the logger for the ClassFinder.

@@ -1,11 +1,12 @@
 import logging
 
+from tortoise.contrib.fastapi import register_tortoise
+
 from api import api_router
 from api.v1.sse_views import dashboard_streams
 from contants import STATIC_FOLDER
 from fastapi import APIRouter, FastAPI
 from fastapi.exceptions import RequestValidationError
-from sqlalchemy.exc import IntegrityError
 from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 
@@ -24,6 +25,7 @@ class App(FastAPI):
         super().__init__(**self.__settings.init_settings())
         # if self.__settings.init_logger:
         #     self.init_logger()
+        self.connect_db()
         self.register_routers()
         self.register_exceptions()
         # self.register_middlewares()
@@ -53,7 +55,7 @@ class App(FastAPI):
     def register_exceptions(self):
         self.add_exception_handler(APIException, on_api_exception)  # noqa: type
         self.add_exception_handler(RequestValidationError, validation_exception_handler)  # noqa: type
-        self.add_exception_handler(IntegrityError, integrity_error_handler)  # noqa: type
+        # self.add_exception_handler(IntegrityError, integrity_error_handler)  # noqa: type
 
     def register_middlewares(self):
         self.add_middleware(
@@ -76,3 +78,16 @@ class App(FastAPI):
 
     def mount_static(self):
         self.mount("/static", StaticFiles(directory=STATIC_FOLDER), name="static")
+
+    def connect_db(self):
+        from core.config.db import get_app_list
+        from core.config.db import TORTOISE_ORM
+        app_list = get_app_list()
+        app_list.append("aerich.models")
+        register_tortoise(
+            self,
+            config=TORTOISE_ORM,
+            modules={"models": app_list},
+            generate_schemas=True,
+            add_exception_handlers=True,
+        )
