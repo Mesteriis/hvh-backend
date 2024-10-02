@@ -28,9 +28,9 @@ class AppSettings(BaseSettings):
 
     env: EnvTypeEnum = EnvTypeEnum.LOCAL
     debug: bool = True
-    title: str = "FastAPI, Docker, and Traefik"
-    description: str = "FastAPI, Docker, and Traefik"
-    version: str = "0.1.0"
+    title: str = "Home Video hub"
+    description: str = "Self host service for video download and streaming, add integration in Home Assistant"
+    version: str = "0.1.1"
 
     root_path: str = ""
 
