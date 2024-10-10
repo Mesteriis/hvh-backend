@@ -18,7 +18,12 @@ def get_tortoise_config() -> dict:
             "models": {
                 "models": app_list,
                 "default_connection": "default",
-            }
+                "schema": "public",
+                "use_tz": True,
+                "timezone": "UTC",
+
+            },
+            "signals": ["aerich.signals"],
         },
     }
     return config
