@@ -28,9 +28,9 @@ class AppSettings(BaseSettings):
 
     env: EnvTypeEnum = EnvTypeEnum.LOCAL
     debug: bool = True
-    title: str = "FastAPI, Docker, and Traefik"
-    description: str = "FastAPI, Docker, and Traefik"
-    version: str = "0.1.0"
+    title: str = "Home Video hub"
+    description: str = "Self host service for video download and streaming, add integration in Home Assistant"
+    version: str = "0.1.1"
 
     root_path: str = ""
 
@@ -40,7 +40,7 @@ class AppSettings(BaseSettings):
 
     swagger_ui_oauth2_redirect_url: str = "/docs/oauth2-redirect"
 
-    db_uri: PostgresDsn = "postgresql+asyncpg://postgres:postgres@db:5432/postgres"
+    db_uri: PostgresDsn = "postgresql://postgres:postgres@db:5432/postgres"
     db_config: DatabaseConfig = DatabaseConfig()
     radis_uri: RedisDsn = "redis://redis:6379/0"
 

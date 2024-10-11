@@ -3,7 +3,6 @@ import logging
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.requests import Request
-from sqlalchemy.exc import IntegrityError
 from starlette.responses import JSONResponse
 from starlette.status import HTTP_409_CONFLICT, HTTP_422_UNPROCESSABLE_ENTITY
 
@@ -60,7 +59,7 @@ async def validation_exception_handler(_: Request, exc: RequestValidationError):
     )
 
 
-async def integrity_error_handler(_: Request, exc: IntegrityError):
+async def integrity_error_handler(_: Request, exc: Exception):
     return JSONResponse(
         status_code=HTTP_409_CONFLICT,
         content=jsonable_encoder({"detail": f"{exc}"}),

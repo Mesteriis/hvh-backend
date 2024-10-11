@@ -1,10 +1,8 @@
-import uuid
 from enum import Enum
 
-from core.config.db import BaseModel
-from sqlalchemy import Enum as SqlEnum
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from tortoise import fields
+
+from tools.base_db_model import BaseDBModel
 
 
 class TaskStatusEnum(Enum):
@@ -15,15 +13,10 @@ class TaskStatusEnum(Enum):
     failed = "failed"
 
 
-class TaskModel(BaseModel):
-    __tablename__ = "tasks"
-
-    url: Mapped[str] = mapped_column(index=True)
-    owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-
-    owner: Mapped["UserModel"] = relationship("UserModel", back_populates="tasks")
-
-    status: Mapped[Enum] = mapped_column(SqlEnum(TaskStatusEnum), default=TaskStatusEnum.new, index=True)
+class TaskModel(BaseDBModel):
+    url = fields.CharField(max_length=256, index=True)
+    owner = fields.ForeignKeyField("models.UserModel", related_name="tasks")
+    status = fields.CharEnumField(TaskStatusEnum, default=TaskStatusEnum.new)
 
     def __repr__(self) -> str:
         return f"<TaskModel id={self.id} url={self.url} status={self.status}>"

@@ -1,51 +1,42 @@
 import uuid
 from enum import Enum
 
-from core.config.db import BaseModel
-from sqlalchemy import JSON, ForeignKey
-from sqlalchemy import Enum as SqlEnum
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from tortoise import fields
 
+from tools.base_db_model import BaseDBModel
 from .enums import StatusEnum
 
 
-class YTChannelModel(BaseModel):
-    __tablename__ = "channels"
+class BaseYTItemModel(BaseDBModel):
+    owner = fields.ForeignKeyField("models.UserModel", related_name="items")
+    task = fields.ForeignKeyField("models.TaskModel", related_name="tasks")
+    metadata = fields.JSONField(null=False, default={})
+    status = fields.CharEnumField(StatusEnum, default=StatusEnum.new, index=True)
+    ext_id = fields.CharField(max_length=256, index=True, unique=True)
 
-    owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-    owner: Mapped["UserModel"] = relationship("UserModel", back_populates=None, lazy="immediate")
-
-    task_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("tasks.id", ondelete="CASCADE"))
-    task: Mapped["TaskModel"] = relationship("TaskModel", back_populates=None, lazy="immediate")
-
-    meta_data: Mapped[dict] = mapped_column(JSON, nullable=True)
-    status: Mapped[Enum] = mapped_column(SqlEnum(StatusEnum), default=StatusEnum.new, index=True)
-    ext_id: Mapped[str] = mapped_column(index=True, unique=True)
+    class Meta:
+        abstract = True
 
 
-class YTPlaylistModel(BaseModel):
-    __tablename__ = "playlists"
+class YTChannelModel(BaseYTItemModel):
+    class Meta:
+        table = "channels"
 
-    owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-    owner: Mapped["UserModel"] = relationship("UserModel", back_populates=None, lazy="immediate")
-
-    task_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("tasks.id", ondelete="CASCADE"))
-    task: Mapped["TaskModel"] = relationship("TaskModel", back_populates=None, lazy="immediate")
-
-    meta_data: Mapped[dict] = mapped_column(JSON, nullable=True)
-    status: Mapped[Enum] = mapped_column(SqlEnum(StatusEnum), default=StatusEnum.new, index=True)
-    ext_id: Mapped[str] = mapped_column(index=True, unique=True)
+    owner = fields.ForeignKeyField("models.UserModel", related_name="channels")
+    task = fields.ForeignKeyField("models.TaskModel", related_name="items")
 
 
-class YTVideoModel(BaseModel):
-    __tablename__ = "videos"
+class YTPlaylistModel(BaseYTItemModel):
+    class Meta:
+        table = "playlists"
 
-    owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-    owner: Mapped["UserModel"] = relationship("UserModel", back_populates=None, lazy="immediate")
+    owner = fields.ForeignKeyField("models.UserModel", related_name="playlists")
+    task = fields.ForeignKeyField("models.TaskModel", related_name="items")
 
-    task_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("tasks.id", ondelete="CASCADE"))
-    task: Mapped["TaskModel"] = relationship("TaskModel", back_populates=None, lazy="immediate")
 
-    meta_data: Mapped[dict] = mapped_column(JSON, nullable=True)
-    status: Mapped[Enum] = mapped_column(SqlEnum(StatusEnum), default=StatusEnum.new, index=True)
-    ext_id: Mapped[str] = mapped_column(index=True, unique=True)
+class YTVideoModel(BaseYTItemModel):
+    class Meta:
+        table = "videos"
+
+    owner = fields.ForeignKeyField("models.UserModel", related_name="videos")
+    task = fields.ForeignKeyField("models.TaskModel", related_name="items")

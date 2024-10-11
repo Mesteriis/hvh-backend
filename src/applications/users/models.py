@@ -1,25 +1,25 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 
+from tortoise import models, fields
+
 from applications.users.auth.utils.password import get_password_hash
-from core.config.db import BaseModel
-from sqlalchemy import DateTime, String, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from tools.base_db_model import BaseDBModel
 
 
-class UserModel(BaseModel):
-    __tablename__ = "users"
-    email: Mapped[str] = mapped_column(index=True)
-    first_name: Mapped[str] = mapped_column(String(50), nullable=True)
-    last_name: Mapped[str] = mapped_column(String(50), nullable=True)
-    hashed_password: Mapped[str] = mapped_column(String(1000), nullable=False)
-    last_login: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    is_active: Mapped[bool] = mapped_column(default=True)
-    is_superuser: Mapped[bool] = mapped_column(default=False)
-    date_joined: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+class UserModel(BaseDBModel):
+    id = fields.UUIDField(pk=True, index=True, unique=True, null=False, default=lambda: str(uuid.uuid4()))
+    email = fields.CharField(max_length=256, unique=True)
+    first_name = fields.CharField(max_length=50, null=True)
+    last_name = fields.CharField(max_length=50, null=True)
+    hashed_password = fields.CharField(max_length=1000, null=True)
+    last_login = fields.DatetimeField(null=True)
+    is_active = fields.BooleanField(default=True)
+    is_superuser = fields.BooleanField(default=False)
+    date_joined = fields.DatetimeField(auto_now_add=True)
 
-    tasks: Mapped[TaskModel] = relationship("TaskModel", back_populates="owner")
 
     async def set_password(self, password: str) -> None:
         self.hashed_password = get_password_hash(password=password)
