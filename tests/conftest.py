@@ -1,4 +1,5 @@
 import asyncio
+from typing import Generator
 
 import pytest
 from alembic import command
@@ -43,17 +44,17 @@ async def setup_test_database():
         await drop_database(DATABASE_URL)
 
 
-@pytest.fixture(scope='session')
-async def event_loop():
-    policy = asyncio.get_event_loop_policy()
-    try:
-        loop = policy.get_event_loop()
-    except RuntimeError:
-        loop = policy.new_event_loop()
-    try:
-        yield loop
-    finally:
-        loop.close()
+# @pytest.fixture(scope='session')
+# async def event_loop():
+#     policy = asyncio.get_event_loop_policy()
+#     try:
+#         loop = policy.get_event_loop()
+#     except RuntimeError:
+#         loop = policy.new_event_loop()
+#     try:
+#         yield loop
+#     finally:
+#         loop.close()
 
 
 @pytest.fixture(scope='session')
@@ -91,11 +92,12 @@ async def session(async_engine):
 @pytest.fixture(scope='session')
 async def client():
     from main import app
-    from core.config.db import get_session
-    app.dependency_overrides[get_session] = override_get_session
     async with AsyncApiTestClient(app=app, base_url='http://test') as client:
         yield client
 
+@pytest.fixture(scope="module")
+def event_loop(client: AsyncApiTestClient) -> Generator:
+    yield client.task.get_loop()
 
 # b-case fixtures
 @pytest.fixture()

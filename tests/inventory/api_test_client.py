@@ -2,17 +2,16 @@ from typing import Any
 
 from fastapi import FastAPI
 from httpx import AsyncClient
-from sqlalchemy.orm import Session
+from fastapi.testclient import TestClient
 
 from applications.users.auth.utils.jwt import get_jwt_pair_from_user
 from applications.users.models import UserModel
 
 
 
-class AsyncApiTestClient(AsyncClient):
+class AsyncApiTestClient(TestClient):
     _app: FastAPI = None
     auth_user = None
-    _db: Session
 
     def __init__(self, **kwargs):
         self._app = kwargs.get("app")

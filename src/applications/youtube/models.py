@@ -20,7 +20,7 @@ class YTChannelModel(BaseYTItemModel):
         table = "channels"
 
     owner = fields.ForeignKeyField("models.UserModel", related_name="channels")
-    task = fields.ForeignKeyField("models.TaskModel", related_name="items")
+    task = fields.ForeignKeyField("models.TaskModel", related_name="channels")
 
 
 class YTPlaylistModel(BaseYTItemModel):
@@ -28,7 +28,7 @@ class YTPlaylistModel(BaseYTItemModel):
         table = "playlists"
 
     owner = fields.ForeignKeyField("models.UserModel", related_name="playlists")
-    task = fields.ForeignKeyField("models.TaskModel", related_name="items")
+    task = fields.ForeignKeyField("models.TaskModel", related_name="playlists")
 
 
 class YTVideoModel(BaseYTItemModel):
@@ -36,4 +36,4 @@ class YTVideoModel(BaseYTItemModel):
         table = "videos"
 
     owner = fields.ForeignKeyField("models.UserModel", related_name="videos")
-    task = fields.ForeignKeyField("models.TaskModel", related_name="items")
+    task = fields.ForeignKeyField("models.TaskModel", related_name="videos")
