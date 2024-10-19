@@ -40,7 +40,7 @@ class AppSettings(BaseSettings):
 
     swagger_ui_oauth2_redirect_url: str = "/docs/oauth2-redirect"
 
-    db_uri: PostgresDsn = "postgresql://postgres:postgres@db:5432/postgres"
+    db_uri: PostgresDsn = "postgres://postgres:postgres@db:5432/postgres"
     db_config: DatabaseConfig = DatabaseConfig()
     radis_uri: RedisDsn = "redis://redis:6379/0"
 

@@ -3,7 +3,12 @@ from __future__ import annotations
 from tortoise import Model
 
 from tools.class_finder import ClassFinder
-from core.config import settings
+
+
+def get_uri() -> str:
+    from core.config import settings
+
+    return str(settings.db_uri)
 
 def get_app_list():
     from contants import APP_FOLDER
@@ -13,15 +18,10 @@ def get_tortoise_config() -> dict:
     app_list = get_app_list()
     app_list.append("aerich.models")
     config = {
-        "connections": settings.db_uri,
+        "connections": get_uri(),
         "apps": {
             "models": {
                 "models": app_list,
-                "default_connection": "default",
-                "schema": "public",
-                "use_tz": True,
-                "timezone": "UTC",
-
             },
             "signals": ["aerich.signals"],
         },
@@ -31,9 +31,11 @@ def get_tortoise_config() -> dict:
 TORTOISE_ORM = get_tortoise_config()
 
 
-def get_uri() -> str:
-    from core.config import settings
+async def init_db():
+    from tortoise import Tortoise
 
-    return str(settings.db_uri)
-
-
+    await Tortoise.init(
+        db_url=get_uri(),
+        modules={"models": get_app_list()},
+    )
+    await Tortoise.generate_schemas()

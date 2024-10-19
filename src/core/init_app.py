@@ -1,18 +1,19 @@
+import asyncio
 import logging
 
-from tortoise.contrib.fastapi import register_tortoise
-
-from api import api_router
-from api.v1.sse_views import dashboard_streams
-from contants import STATIC_FOLDER
 from fastapi import APIRouter, FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
+from tortoise import Tortoise
 
+from api import api_router
+from api.v1.sse_views import dashboard_streams
+from contants import STATIC_FOLDER
+from tools.async_to_sync import run_coroutine_sync
 from .async_logger import DEFAULT_LOGGERS, HandlerItem, init_logger
 from .async_logger.handlers import PrintLog
-from .exceptions import APIException, integrity_error_handler, on_api_exception, validation_exception_handler
+from .exceptions import APIException, on_api_exception, validation_exception_handler
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +27,10 @@ class App(FastAPI):
         # if self.__settings.init_logger:
         #     self.init_logger()
         self.connect_db()
-        self.register_routers()
-        self.register_exceptions()
+        # self.register_routers()
+        # self.register_exceptions()
         # self.register_middlewares()
-        self.mount_static()
+        # self.mount_static()
 
     @staticmethod
     def get_settings() -> "AppSettings":
@@ -80,14 +81,12 @@ class App(FastAPI):
         self.mount("/static", StaticFiles(directory=STATIC_FOLDER), name="static")
 
     def connect_db(self):
-        from core.config.db import get_app_list
-        from core.config.db import TORTOISE_ORM
-        app_list = get_app_list()
-        app_list.append("aerich.models")
-        register_tortoise(
-            self,
-            config=TORTOISE_ORM,
-            modules={"models": app_list},
-            generate_schemas=True,
-            add_exception_handlers=True,
-        )
+        async def asyncwrapper():
+            from core.config.db import get_app_list
+            app_list = get_app_list()
+            app_list.append("aerich.models")
+            await Tortoise.init(
+                db_url=str(self.__settings.db_uri),
+                modules={'models': app_list}
+            )
+        run_coroutine_sync(asyncwrapper())
