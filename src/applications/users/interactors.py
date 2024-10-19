@@ -96,6 +96,3 @@ class PasswordInteractor:
                 status_code=404,
                 detail="The user with this username does not exist in the system.",
             )
-
-        # if settings.EMAILS_ENABLED:
-        #     await send_reset_password_email.kiq(email)

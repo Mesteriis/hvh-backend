@@ -1,11 +1,10 @@
-from tortoise import models, fields
+from tortoise import fields, models
 
 
 class BaseDBModel(models.Model):
     class Meta:
         abstract = True
         ordering = ["-created_at"]
-
 
     id = fields.UUIDField(unique=True, pk=True)
     created_at = fields.DatetimeField(auto_now_add=True)

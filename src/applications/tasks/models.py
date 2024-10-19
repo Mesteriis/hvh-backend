@@ -1,8 +1,7 @@
 from enum import Enum
 
-from tortoise import fields
-
 from tools.base_db_model import BaseDBModel
+from tortoise import fields
 
 
 class TaskStatusEnum(Enum):

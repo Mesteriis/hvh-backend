@@ -184,12 +184,10 @@ class ClassFinder:
         classes = self.find_all_classes()
         imports = self.generate_import_statements(classes)
         import_statements = []
-        for module_path, class_name in imports:
+        for module_path, _ in imports:
             import_statements.append(f"{module_path}")
 
         return list(set(import_statements))
-
-
 
     def setup_logger(self) -> logging.Logger:
         """

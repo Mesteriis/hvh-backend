@@ -1,9 +1,6 @@
-import uuid
-from enum import Enum
-
+from tools.base_db_model import BaseDBModel
 from tortoise import fields
 
-from tools.base_db_model import BaseDBModel
 from .enums import StatusEnum
 
 

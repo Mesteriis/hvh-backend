@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
-
-from tortoise import models, fields
 
 from applications.users.auth.utils.password import get_password_hash
 from tools.base_db_model import BaseDBModel
+from tortoise import fields
 
 
 class UserModel(BaseDBModel):
@@ -19,7 +17,6 @@ class UserModel(BaseDBModel):
     is_active = fields.BooleanField(default=True)
     is_superuser = fields.BooleanField(default=False)
     date_joined = fields.DatetimeField(auto_now_add=True)
-
 
     async def set_password(self, password: str) -> None:
         self.hashed_password = get_password_hash(password=password)

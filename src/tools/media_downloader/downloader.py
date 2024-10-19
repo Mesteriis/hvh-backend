@@ -1,6 +1,5 @@
 from enum import Enum
 from pathlib import Path
-from typing import Type
 
 from applications.youtube.models import YTChannelModel, YTPlaylistModel, YTVideoModel
 from pydantic import AnyHttpUrl
@@ -56,8 +55,8 @@ class MediaDownloader:
     _info_raw: dict
     _info: YTVideoInfo | YTChannelInfo | YTPlaylistInfo | None = None
 
-    __model: Type[YTVideoModel] | Type[YTChannelModel] | Type[YTPlaylistModel] | None = None
-    __struct: Type[YTVideoInfo] | Type[YTChannelInfo] | Type[YTPlaylistInfo] | None = None
+    __model: type[YTVideoModel] | type[YTChannelModel] | type[YTPlaylistModel] | None = None
+    __struct: type[YTVideoInfo] | type[YTChannelInfo] | type[YTPlaylistInfo] | None = None
 
     def __init__(self, url: AnyHttpUrl | str, media_folder: Path, options: dict | None = None):
         """

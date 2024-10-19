@@ -40,7 +40,7 @@ def verify_password_reset_token(token) -> str | None:
 async def authenticate(credentials: CredentialsSchema) -> UserModel | None:
     try:
         user = await UserSelector.get_by_email(credentials.email)
-    except UserModel.NotFoundError:
+    except UserSelector:
         raise HTTPException(status_code=400, detail="Incorrect email or password")
 
     verified, updated_password_hash = verify_and_update_password(credentials.password, user.hashed_password)

@@ -4,6 +4,8 @@ from applications.users.models import UserModel
 
 
 class UserSelector:
+    FileNotFoundError = None
+
     @classmethod
     async def get_by_uid(cls, user_uid: UUID | str) -> UserModel:
         return await UserModel.objects.get(id=user_uid)
