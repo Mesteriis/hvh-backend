@@ -12,10 +12,10 @@ from tortoise import Tortoise
 
 from .async_logger import DEFAULT_LOGGERS, HandlerItem, init_logger
 from .async_logger.handlers import PrintLog
+from .config.db import TORTOISE_ORM # noqa: F401
 from .exceptions import APIException, on_api_exception, validation_exception_handler
 
 logger = logging.getLogger(__name__)
-
 
 class App(FastAPI):
     __settings: "AppSettings"  # noqa: F821

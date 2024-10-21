@@ -66,7 +66,7 @@ build-backend = "poetry.core.masonry.api"
 requires-python = "==3.12.2"
 
 [tool.aerich]
-tortoise_orm = "core.init_app.TORTOISE_ORM"
+tortoise_orm = "core.config.db.TORTOISE_ORM"
 location = "../migrations"
 src_folder = "./src"
 
