@@ -65,6 +65,8 @@ class AppSettings(BaseSettings):
 
     id_account_verification: bool = False
     email_reset_token_expire_hours: int = 24
+    celery_broker_url: str = "redis"
+    celery_result_backend: str = "redis"
 
     def init_settings(self) -> dict[str, Any]:
         return {
