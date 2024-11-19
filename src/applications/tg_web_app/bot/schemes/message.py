@@ -1,23 +1,8 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field
 
-from applications.tg_web_app.bot.enums import ParseModeEnum, TGBotCommandEnum
-
-
-class TelegramUserData(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    id: str
-    first_name: str
-    last_name: str | None = None
-    username: str | None = None
-    photo_url: str | None = None
-    auth_date: str | None = None
+from applications.tg_web_app.bot.enums import TGBotCommandEnum
 
 
-class TelegramAuthData(TelegramUserData):
-    hash: str
-
-
-# Payload WebHook
 class TelegramFromData(BaseModel):
     id: int = Field(..., description="Unique identifier for the user")
     is_bot: bool = Field(..., description="True if the user is a bot")
@@ -39,7 +24,9 @@ class TelegramChatData(BaseModel):
 
 
 class TelegramEntitiesItem(BaseModel):
-    offset: int = Field(..., description="Offset in UTF-16 code units to the start of the entity")
+    offset: int = Field(
+        ..., description="Offset in UTF-16 code units to the start of the entity"
+    )
     length: int = Field(..., description="Length of the entity in UTF-16 code units")
     type: str = Field(..., description="Type of the entity")
 
@@ -49,16 +36,20 @@ class TelegramMessageWebHookPayload(BaseModel):
     from_: TelegramFromData = Field(..., alias="from", description="Sender")
     chat: TelegramChatData = Field(..., description="Chat the message belongs to")
     date: int = Field(..., description="Date the message was sent in Unix time")
-    text: str = Field(..., description="For text messages, the actual UTF-8 text of the message")
+    text: str = Field(
+        ..., description="For text messages, the actual UTF-8 text of the message"
+    )
     entities: list[TelegramEntitiesItem] | None = Field(
-        None, description="For text messages, special entities like usernames, URLs, bot commands, etc."
+        None,
+        description="For text messages, special entities like usernames, URLs, bot commands, etc.",
     )
 
 
 class TelegramWebHookPayload(BaseModel):
     update_id: int = Field(..., description="The update's unique identifier")
     message: TelegramMessageWebHookPayload | None = Field(
-        None, description="New incoming message of any kind — text, photo, sticker, etc."
+        None,
+        description="New incoming message of any kind — text, photo, sticker, etc.",
     )
 
     @property
@@ -304,6 +295,7 @@ class ForceReply(BaseModel):
         description="Use this parameter if you want to force reply from specific users only",
     )
 
+
 class LinkPreviewOptions(BaseModel):
     url: str | None = Field(None, description="URL of the link to be previewed")
     prefer_small_media: bool | None = Field(
@@ -316,6 +308,7 @@ class LinkPreviewOptions(BaseModel):
         None, description="Show the link preview above the message text"
     )
 
+
 class SendMessagePayload(BaseModel):
     chat_id: int | str = Field(
         ...,
@@ -323,7 +316,8 @@ class SendMessagePayload(BaseModel):
     )
     text: str = Field(..., description="Text of the message to be sent")
     parse_mode: str | None = Field(
-        None, description="Mode for parsing entities in the message text use ParseModeEnum"
+        None,
+        description="Mode for parsing entities in the message text use ParseModeEnum",
     )
 
     link_preview_options: LinkPreviewOptions | None = Field(
@@ -339,9 +333,9 @@ class SendMessagePayload(BaseModel):
     )
 
     reply_markup: (
-            ReplyKeyboardMarkup
-            | InlineKeyboardMarkup
-            | ReplyKeyboardRemove
-            | ForceReply
-            | None
+        ReplyKeyboardMarkup
+        | InlineKeyboardMarkup
+        | ReplyKeyboardRemove
+        | ForceReply
+        | None
     ) = Field(None, description="Additional interface options")
