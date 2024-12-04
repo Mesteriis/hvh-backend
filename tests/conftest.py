@@ -2,10 +2,6 @@ import asyncio
 from typing import Generator
 
 import pytest
-from alembic import command
-from alembic.config import Config
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
 
 from contants import ROOT_DIR, APP_FOLDER
 from core.config import settings
@@ -24,15 +20,9 @@ from tests.settings import pytest_settings  # noqa
 pytest_plugins = pytest_settings.pytest_plugins
 set_level_logging(pytest_settings.logger_level)
 
-engine = create_async_engine(DATABASE_URL, future=True)
-AsyncSessionLocal = sessionmaker(  # type: ignore
-    bind=engine, class_=AsyncSession, expire_on_commit=False
-)
 
 
-async def override_get_session() -> AsyncSession:
-    async with AsyncSessionLocal() as session:
-        yield session
+
 
 
 @pytest.fixture(scope='session')

@@ -1,18 +1,22 @@
 import logging
+import os
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
-from api import api_router
-from api.v1.sse_views import dashboard_streams
-from contants import STATIC_FOLDER
 from fastapi import APIRouter, FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
-from tools.async_to_sync import run_coroutine_sync
-from tortoise import Tortoise
+from tortoise import Tortoise, generate_config
+from tortoise.contrib.fastapi import RegisterTortoise
 
+from api import api_router
+from api.v1.sse_views import dashboard_streams
+from contants import STATIC_FOLDER
+from tools.async_to_sync import run_coroutine_sync
 from .async_logger import DEFAULT_LOGGERS, HandlerItem, init_logger
 from .async_logger.handlers import PrintLog
-from .config.db import TORTOISE_ORM # noqa: F401
+from .config.db import TORTOISE_ORM, get_models_paths  # noqa: F401
 from .exceptions import APIException, on_api_exception, validation_exception_handler
 
 logger = logging.getLogger(__name__)
@@ -79,11 +83,53 @@ class App(FastAPI):
         self.mount("/static", StaticFiles(directory=STATIC_FOLDER), name="static")
 
     def connect_db(self):
-        async def asyncwrapper():
-            from core.config.db import get_app_list
+        async def awrapper():
+            # from tortoise.contrib.fastapi import register_tortoise
+            # register_tortoise(
+            #     self,
+            #     db_url=self.__settings.db_uri,
+            #     modules={"models": get_models_paths()},
+            #     generate_schemas=True,
+            # )
+            await Tortoise.init(
+                db_url=str(self.__settings.db_uri),
+                modules={'models': get_models_paths()}
+            )
+            # Generate the schema
+            await Tortoise.generate_schemas()
 
-            app_list = get_app_list()
-            app_list.append("aerich.models")
-            await Tortoise.init(db_url=str(self.__settings.db_uri), modules={"models": app_list})
-
-        run_coroutine_sync(asyncwrapper())
+        run_coroutine_sync(awrapper())
+    @staticmethod
+    @asynccontextmanager
+    async def lifespan_test(app: FastAPI) -> AsyncGenerator[None, None]:
+        config = generate_config(
+            os.getenv("TORTOISE_TEST_DB", "sqlite://:memory:"),
+            app_modules={"models": ["models"]},
+            testing=True,
+            connection_label="models",
+        )
+        async with RegisterTortoise(
+                app=app,
+                config=config,
+                generate_schemas=True,
+                add_exception_handlers=True,
+                _create_db=True,
+        ):
+            # db connected
+            yield
+            # app teardown
+        # db connections closed
+        await Tortoise._drop_databases()
+    @staticmethod
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+        if getattr(app.state, "testing", None):
+            async with App.lifespan_test(app) as _:
+                yield
+        else:
+            # app startup
+            async with App.register_orm(app):
+                # db connected
+                yield
+                # app teardown
+            # db connections closed

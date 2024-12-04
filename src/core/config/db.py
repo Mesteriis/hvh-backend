@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from tools.class_finder import ClassFinder
 from tortoise import Model
+
+from tools.class_finder import ClassFinder
 
 
 def get_uri() -> str:
@@ -12,8 +13,13 @@ def get_uri() -> str:
 
 def get_app_list():
     from contants import APP_FOLDER
-
     return ClassFinder(APP_FOLDER, Model).build_tortoise_imports()
+
+
+def get_models_paths() -> list[str]:
+    models_list = get_app_list()
+    models_list.append("aerich.models")
+    return models_list
 
 
 def get_tortoise_config() -> dict:
