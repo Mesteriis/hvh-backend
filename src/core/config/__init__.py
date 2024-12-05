@@ -3,15 +3,11 @@ __all__ = ["settings"]
 from typing import Any
 
 import decouple
-from pydantic import AnyHttpUrl, BaseModel, Field, PostgresDsn, RedisDsn
+from pydantic import BaseModel, Field, PostgresDsn, RedisDsn, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 from .constants import EnvTypeEnum
-
-
-class APIServer(BaseSettings):
-    url: AnyHttpUrl
-    description: str
 
 
 class DatabaseConfig(BaseModel):
@@ -68,6 +64,7 @@ class AppSettings(BaseSettings):
     celery_broker_url: str = "redis"
     celery_result_backend: str = "redis"
 
+    default_tz: str = 'UTC'
     def init_settings(self) -> dict[str, Any]:
         return {
             "title": self.title,
@@ -80,5 +77,27 @@ class AppSettings(BaseSettings):
             "swagger_ui_oauth2_redirect_url": self.swagger_ui_oauth2_redirect_url,
         }
 
+    @computed_field
+    def aerich_config(self) -> dict:
+        from tortoise import Model
+        from contants import APP_FOLDER
+        from tools.class_finder import ClassFinder
+        models_path = ClassFinder(APP_FOLDER, Model).build_tortoise_imports()
+        models_path.append("aerich.models")
+        return {
+            "connections": {
+                "default": str(self.db_uri),
+                "sqlite": "sqlite://db.sqlite3",
+                "memory": "sqlite://:memory:",
+            },
+            "apps": {
+                "models": {
+                    "models": models_path,
+                    "default_connection": "default",
+                    "use_tz": True,
+                    "timezone": self.default_tz,
+                }
+            },
+        }
 
 settings = AppSettings()

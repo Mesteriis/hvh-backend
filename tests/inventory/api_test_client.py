@@ -9,7 +9,7 @@ from applications.users.models import UserModel
 
 
 
-class AsyncApiTestClient(TestClient):
+class AsyncApiTestClient(AsyncClient):
     _app: FastAPI = None
     auth_user = None
 

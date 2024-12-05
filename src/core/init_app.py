@@ -16,7 +16,7 @@ from contants import STATIC_FOLDER
 from tools.async_to_sync import run_coroutine_sync
 from .async_logger import DEFAULT_LOGGERS, HandlerItem, init_logger
 from .async_logger.handlers import PrintLog
-from .config.db import TORTOISE_ORM, get_models_paths  # noqa: F401
+from .config.db import get_models_paths  # noqa: F401
 from .exceptions import APIException, on_api_exception, validation_exception_handler
 
 logger = logging.getLogger(__name__)
@@ -27,8 +27,8 @@ class App(FastAPI):
     def __init__(self):
         self.__settings = self.get_settings()
         super().__init__(**self.__settings.init_settings())
-        if self.__settings.init_logger:
-            self.init_logger()
+        # if self.__settings.init_logger:
+        #     self.init_logger()
         self.connect_db()
         self.register_routers()
         self.register_exceptions()
@@ -84,18 +84,10 @@ class App(FastAPI):
 
     def connect_db(self):
         async def awrapper():
-            # from tortoise.contrib.fastapi import register_tortoise
-            # register_tortoise(
-            #     self,
-            #     db_url=self.__settings.db_uri,
-            #     modules={"models": get_models_paths()},
-            #     generate_schemas=True,
-            # )
             await Tortoise.init(
                 db_url=str(self.__settings.db_uri),
                 modules={'models': get_models_paths()}
             )
-            # Generate the schema
             await Tortoise.generate_schemas()
 
         run_coroutine_sync(awrapper())
@@ -103,7 +95,7 @@ class App(FastAPI):
     @asynccontextmanager
     async def lifespan_test(app: FastAPI) -> AsyncGenerator[None, None]:
         config = generate_config(
-            os.getenv("TORTOISE_TEST_DB", "sqlite://:memory:"),
+            App.get_settings().db_uri,
             app_modules={"models": ["models"]},
             testing=True,
             connection_label="models",
