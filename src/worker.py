@@ -1,8 +1,5 @@
-import os
-
 import celery_tasks  # noqa: F401
 from celery import Celery
-
 from core.config import settings
 
 celery = Celery(__name__)

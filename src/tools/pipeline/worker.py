@@ -1,9 +1,7 @@
 import queue
 import threading
+from collections.abc import Callable
 from logging import getLogger
-from typing import Optional, Any, Callable
-
-from icecream import ic
 
 from tools.pipeline.custom_q import CustomQ
 
@@ -17,13 +15,9 @@ class Worker(threading.Thread):
     _func_bar_increment: Callable = None
 
     def __init__(
-            self,
-            in_: CustomQ,
-            out_: queue.PriorityQueue,
-            func_processing: Callable,
-            func_bar_increment: Callable
+        self, in_: CustomQ, out_: queue.PriorityQueue, func_processing: Callable, func_bar_increment: Callable
     ):
-        super(Worker, self).__init__()
+        super().__init__()
         self.setDaemon(True)
 
         self.in_ = in_
@@ -41,6 +35,6 @@ class Worker(threading.Thread):
                 if data:
                     self.out_.put(data)
             except Exception as e:
-                logger.error(f"In progress {job} error: {e}")
+                logger.exception(f"In progress {job} error: {e}")
             self._func_bar_increment(self.in_.task_id)
             self.in_.queue.task_done()

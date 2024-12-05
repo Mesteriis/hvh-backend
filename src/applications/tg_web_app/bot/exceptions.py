@@ -24,12 +24,8 @@ class TGAuthServiceAuthError(Exception):
     Exception raised when Telegram authentication fails.
     """
 
-    pass
-
 
 class TGWebhookError(Exception):
     """
     Exception raised when setting up a webhook fails.
     """
-
-    pass

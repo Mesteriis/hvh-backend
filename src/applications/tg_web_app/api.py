@@ -3,19 +3,19 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.responses import Response
 
-from .bot import TGWebAppBot
-from .bot.enums import TGBotCommandEnum
-from .bot.schemes import TelegramWebHookPayload, TGWPAQueryData
-from .schemes import JWTPairTokenTgAuth
-from ..auth.schemas import JWTPairToken, CredentialsSchema
+from ..auth.schemas import CredentialsSchema, JWTPairToken
 from ..auth.utils.contrib import (
-    get_current_active_user_with_selected_device,
     authenticate,
+    get_current_active_user_with_selected_device,
 )
 from ..auth.utils.jwt import get_jwt_pair_from_user
 from ..users.interactors import UserInteractor
 from ..users.models import User
 from ..users.schemas.user_schemas import CreateUserTG
+from .bot import TGWebAppBot
+from .bot.enums import TGBotCommandEnum
+from .bot.schemes import TelegramWebHookPayload, TGWPAQueryData
+from .schemes import JWTPairTokenTgAuth
 
 tg_router = APIRouter(tags=["tg"])
 logger = logging.getLogger(__name__)
@@ -32,17 +32,13 @@ async def start_web_app_bot(data: dict) -> Response:
     return Response(status_code=200)
 
 
-@tg_router.post(
-    "/auth/callback/", response_model=JWTPairTokenTgAuth, status_code=201, tags=["auth"]
-)
+@tg_router.post("/auth/callback/", response_model=JWTPairTokenTgAuth, status_code=201, tags=["auth"])
 async def tg_auth_callback(
     data: TGWPAQueryData,
 ) -> JWTPairToken:
     user_data = data.user
 
-    user, created = await UserInteractor().get_or_create_from_tg(
-        CreateUserTG.model_validate(user_data)
-    )
+    user, created = await UserInteractor().get_or_create_from_tg(CreateUserTG.model_validate(user_data))
 
     data = get_jwt_pair_from_user(user)
     data["created"] = created
@@ -66,9 +62,7 @@ async def merge_accounts(
 
     except Exception as e:
         logger.error(e)
-        raise HTTPException(
-            status_code=400, detail="An error occurred while merging accounts."
-        )
+        raise HTTPException(status_code=400, detail="An error occurred while merging accounts.")
 
     data = get_jwt_pair_from_user(user)
 

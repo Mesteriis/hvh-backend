@@ -1,11 +1,11 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from .constants import SMTP_HELO_HOST, SMTP_FROM_ADDRESS
+from .constants import SMTP_FROM_ADDRESS, SMTP_HELO_HOST
 
 
 class CheckEmailSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix='CHECK_EMAIL_',
+        env_prefix="CHECK_EMAIL_",
     )
     check_format: bool = True
     check_blacklist: bool = True

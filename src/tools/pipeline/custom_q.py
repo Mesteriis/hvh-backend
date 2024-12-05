@@ -13,13 +13,13 @@ class CustomQ:
     name: str = None
 
     @classmethod
-    def create(cls, data, name: str = None) -> Self:
+    def create(cls, data, name: str | None = None) -> Self:
         queue_ = Queue()
         for item in data:
             queue_.put(item)
         q = cls()
         q.queue = queue_
-        q.name = name or f'Task {id(q)}'
+        q.name = name or f"Task {id(q)}"
         q.len_date = len(data)
         q.data = data
         return q

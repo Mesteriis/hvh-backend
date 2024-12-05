@@ -7,12 +7,11 @@ import hmac
 import json
 import logging
 from datetime import datetime
-from typing import Literal, Dict, Any
+from typing import Any, Dict, Literal
 from urllib.parse import parse_qsl
 
 from fastapi import HTTPException
-from pydantic import BaseModel, ConfigDict, field_validator, computed_field
-
+from pydantic import BaseModel, ConfigDict, computed_field, field_validator
 from settings.manager import settings
 
 RAISE_EXCEPTIONS = False
@@ -51,9 +50,7 @@ class WebAppData(BaseModel):
     user: WebAppDataUser | None = None
     receiver: WebAppDataUser | None = None
     chat: WebAppDataChat | None = None
-    chat_type: Literal["sender", "private", "group", "supergroup", "channel"] | None = (
-        None
-    )
+    chat_type: Literal["sender", "private", "group", "supergroup", "channel"] | None = None
     chat_instance: str | None = None
     start_param: str | None = None
     can_send_after: int | None = None
@@ -72,9 +69,7 @@ class WebAppData(BaseModel):
     @property
     def __secret_key(self) -> bytes:
         """Calculate the secret key"""
-        return hmac.new(
-            key=self._KEY, msg=self._token.encode("utf-8"), digestmod=hashlib.sha256
-        ).digest()
+        return hmac.new(key=self._KEY, msg=self._token.encode("utf-8"), digestmod=hashlib.sha256).digest()
 
     @staticmethod
     def __json_serializer(obj):
@@ -149,6 +144,4 @@ class TGWPAQueryData(BaseModel):
 
     @computed_field
     def user(self) -> WebAppDataUser:
-        return WebAppDataUser.model_validate(
-            self.init_data.user.model_dump(exclude_none=True, exclude_unset=True)
-        )
+        return WebAppDataUser.model_validate(self.init_data.user.model_dump(exclude_none=True, exclude_unset=True))

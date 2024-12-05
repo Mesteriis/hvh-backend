@@ -5,16 +5,16 @@ from urllib.parse import urljoin
 import httpx
 from fastapi import FastAPI
 from httpx import HTTPError
-
 from settings.manager import settings
-from .exceptions import TGWebAppBotSendError, TGAuthServiceAuthError, TGWebhookError
+
+from .exceptions import TGAuthServiceAuthError, TGWebAppBotSendError, TGWebhookError
 from .message import MSG_START_APP_ENG
 from .schemes import (
-    SendMessagePayload,
-    InlineKeyboardMarkup,
     InlineKeyboardButton,
-    WebAppInfo,
+    InlineKeyboardMarkup,
     LinkPreviewOptions,
+    SendMessagePayload,
+    WebAppInfo,
 )
 
 logger = logging.getLogger(__name__)
@@ -110,13 +110,8 @@ class TGWebAppBot:
         )
 
         if response.status_code != 200:
-            if (
-                response.status_code == 429
-                and response.json()["description"] == "Too Many Requests: retry after 1"
-            ):
+            if response.status_code == 429 and response.json()["description"] == "Too Many Requests: retry after 1":
                 return
-            raise cls.TGWebhookError(
-                f"Failed to set webhook url:{url}, error:\n {json.dumps(response.json())}"
-            )
+            raise cls.TGWebhookError(f"Failed to set webhook url:{url}, error:\n {json.dumps(response.json())}")
         else:
             logger.info(f"Webhook set successfully {url}")

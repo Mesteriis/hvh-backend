@@ -1,5 +1,3 @@
-__all__ = [
-    "Pipeline"
-]
+__all__ = ["Pipeline"]
 
 from tools.pipeline.pipeline import Pipeline

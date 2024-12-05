@@ -1,25 +1,25 @@
 import logging
-import os
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
-
-from fastapi import APIRouter, FastAPI
-from fastapi.exceptions import RequestValidationError
-from starlette.middleware.cors import CORSMiddleware
-from starlette.staticfiles import StaticFiles
-from tortoise import Tortoise, generate_config
-from tortoise.contrib.fastapi import RegisterTortoise
 
 from api import api_router
 from api.v1.sse_views import dashboard_streams
 from contants import STATIC_FOLDER
+from fastapi import APIRouter, FastAPI
+from fastapi.exceptions import RequestValidationError
+from starlette.middleware.cors import CORSMiddleware
+from starlette.staticfiles import StaticFiles
 from tools.async_to_sync import run_coroutine_sync
+from tortoise import Tortoise, generate_config
+from tortoise.contrib.fastapi import RegisterTortoise
+
 from .async_logger import DEFAULT_LOGGERS, HandlerItem, init_logger
 from .async_logger.handlers import PrintLog
-from .config.db import get_models_paths  # noqa: F401
+from .config.db import get_models_paths
 from .exceptions import APIException, on_api_exception, validation_exception_handler
 
 logger = logging.getLogger(__name__)
+
 
 class App(FastAPI):
     __settings: "AppSettings"  # noqa: F821
@@ -84,13 +84,11 @@ class App(FastAPI):
 
     def connect_db(self):
         async def awrapper():
-            await Tortoise.init(
-                db_url=str(self.__settings.db_uri),
-                modules={'models': get_models_paths()}
-            )
+            await Tortoise.init(db_url=str(self.__settings.db_uri), modules={"models": get_models_paths()})
             await Tortoise.generate_schemas()
 
         run_coroutine_sync(awrapper())
+
     @staticmethod
     @asynccontextmanager
     async def lifespan_test(app: FastAPI) -> AsyncGenerator[None, None]:
@@ -101,17 +99,18 @@ class App(FastAPI):
             connection_label="models",
         )
         async with RegisterTortoise(
-                app=app,
-                config=config,
-                generate_schemas=True,
-                add_exception_handlers=True,
-                _create_db=True,
+            app=app,
+            config=config,
+            generate_schemas=True,
+            add_exception_handlers=True,
+            _create_db=True,
         ):
             # db connected
             yield
             # app teardown
         # db connections closed
         await Tortoise._drop_databases()
+
     @staticmethod
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:

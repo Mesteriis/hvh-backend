@@ -6,7 +6,6 @@ import decouple
 from pydantic import BaseModel, Field, PostgresDsn, RedisDsn, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 from .constants import EnvTypeEnum
 
 
@@ -44,9 +43,7 @@ class AppSettings(BaseSettings):
 
     init_logger: bool = True
 
-    cors_allowed_origins: list = [
-        "http://localhost:63342",
-    ] + decouple.config("CORS_ALLOWED_ORIGINS", default="", cast=str).split(",")
+    cors_allowed_origins: list = ["*"]
     cors_allow_credentials: bool = True
     cors_allow_methods: list = ["*"]
     cors_allow_headers: list = ["*"]
@@ -64,7 +61,8 @@ class AppSettings(BaseSettings):
     celery_broker_url: str = "redis"
     celery_result_backend: str = "redis"
 
-    default_tz: str = 'UTC'
+    default_tz: str = "UTC"
+
     def init_settings(self) -> dict[str, Any]:
         return {
             "title": self.title,
@@ -75,13 +73,15 @@ class AppSettings(BaseSettings):
             "docs_url": self.docs_url,
             "redoc_url": self.redoc_url,
             "swagger_ui_oauth2_redirect_url": self.swagger_ui_oauth2_redirect_url,
+            "debug": self.debug,
         }
 
     @computed_field
     def aerich_config(self) -> dict:
-        from tortoise import Model
         from contants import APP_FOLDER
         from tools.class_finder import ClassFinder
+        from tortoise import Model
+
         models_path = ClassFinder(APP_FOLDER, Model).build_tortoise_imports()
         models_path.append("aerich.models")
         return {
@@ -99,5 +99,6 @@ class AppSettings(BaseSettings):
                 }
             },
         }
+
 
 settings = AppSettings()

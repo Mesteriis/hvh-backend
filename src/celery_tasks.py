@@ -1,11 +1,10 @@
 import uuid
 
-from celery import shared_task
-
 from applications.tasks.service import TaskSelector
 from applications.youtube.models import YTChannelModel, YTPlaylistModel, YTVideoModel
 from applications.youtube.service import YTItemInteractor, YTItemSelector
 from applications.youtube.structs import YTItemStruct
+from celery import shared_task
 from tools.media_downloader.downloader import MediaDownloader
 
 

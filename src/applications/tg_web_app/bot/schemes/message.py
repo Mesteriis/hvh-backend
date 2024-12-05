@@ -1,6 +1,5 @@
-from pydantic import BaseModel, Field
-
 from applications.tg_web_app.bot.enums import TGBotCommandEnum
+from pydantic import BaseModel, Field
 
 
 class TelegramFromData(BaseModel):
@@ -9,9 +8,7 @@ class TelegramFromData(BaseModel):
     first_name: str = Field(..., description="User's first name")
     last_name: str | None = Field(None, description="User's last name")
     username: str | None = Field(None, description="User's username")
-    language_code: str | None = Field(
-        None, description="IETF language tag of the user's language"
-    )
+    language_code: str | None = Field(None, description="IETF language tag of the user's language")
     is_premium: bool | None = Field(None, description="True if the user is premium")
 
 
@@ -24,9 +21,7 @@ class TelegramChatData(BaseModel):
 
 
 class TelegramEntitiesItem(BaseModel):
-    offset: int = Field(
-        ..., description="Offset in UTF-16 code units to the start of the entity"
-    )
+    offset: int = Field(..., description="Offset in UTF-16 code units to the start of the entity")
     length: int = Field(..., description="Length of the entity in UTF-16 code units")
     type: str = Field(..., description="Type of the entity")
 
@@ -36,9 +31,7 @@ class TelegramMessageWebHookPayload(BaseModel):
     from_: TelegramFromData = Field(..., alias="from", description="Sender")
     chat: TelegramChatData = Field(..., description="Chat the message belongs to")
     date: int = Field(..., description="Date the message was sent in Unix time")
-    text: str = Field(
-        ..., description="For text messages, the actual UTF-8 text of the message"
-    )
+    text: str = Field(..., description="For text messages, the actual UTF-8 text of the message")
     entities: list[TelegramEntitiesItem] | None = Field(
         None,
         description="For text messages, special entities like usernames, URLs, bot commands, etc.",
@@ -91,12 +84,8 @@ class ChatAdministratorRights(BaseModel):
     can_promote_members: bool = Field(..., description="Can promote members")
     can_change_info: bool = Field(..., description="Can change chat information")
     can_invite_users: bool = Field(..., description="Can invite new users")
-    can_post_messages: bool | None = Field(
-        None, description="Can post messages (for channels)"
-    )
-    can_edit_messages: bool | None = Field(
-        None, description="Can edit messages (for channels)"
-    )
+    can_post_messages: bool | None = Field(None, description="Can post messages (for channels)")
+    can_edit_messages: bool | None = Field(None, description="Can edit messages (for channels)")
     can_pin_messages: bool | None = Field(None, description="Can pin messages")
     can_manage_topics: bool | None = Field(None, description="Can manage topics")
 
@@ -105,27 +94,19 @@ class KeyboardButtonRequestChat(BaseModel):
     request_id: int = Field(..., description="Unique identifier for the request")
     chat_is_channel: bool = Field(..., description="Require a channel chat")
     chat_is_forum: bool | None = Field(None, description="Require a forum chat")
-    chat_has_username: bool | None = Field(
-        None, description="Require chat to have a username"
-    )
-    chat_is_created: bool | None = Field(
-        None, description="Require a newly created chat"
-    )
+    chat_has_username: bool | None = Field(None, description="Require chat to have a username")
+    chat_is_created: bool | None = Field(None, description="Require a newly created chat")
     user_administrator_rights: ChatAdministratorRights | None = Field(
         None, description="User's administrator rights in the chat"
     )
     bot_administrator_rights: ChatAdministratorRights | None = Field(
         None, description="Bot's administrator rights in the chat"
     )
-    bot_is_member: bool | None = Field(
-        None, description="Bot must be a member of the chat"
-    )
+    bot_is_member: bool | None = Field(None, description="Bot must be a member of the chat")
 
 
 class KeyboardButtonPollType(BaseModel):
-    type: str | None = Field(
-        None, description="Allowed poll type ('quiz', 'regular', or None)"
-    )
+    type: str | None = Field(None, description="Allowed poll type ('quiz', 'regular', or None)")
 
 
 class WebAppInfo(BaseModel):
@@ -138,70 +119,36 @@ class TGUser(BaseModel):
     first_name: str = Field(..., description="User's first name")
     last_name: str | None = Field(None, description="User's last name")
     username: str | None = Field(None, description="User's username")
-    language_code: str | None = Field(
-        None, description="IETF language tag of the user's language"
-    )
+    language_code: str | None = Field(None, description="IETF language tag of the user's language")
 
 
 class MessageEntity(BaseModel):
-    type: str = Field(
-        ..., description="Type of the entity (e.g., 'mention', 'hashtag')"
-    )
-    offset: int = Field(
-        ..., description="Offset in UTF-16 code units to the start of the entity"
-    )
+    type: str = Field(..., description="Type of the entity (e.g., 'mention', 'hashtag')")
+    offset: int = Field(..., description="Offset in UTF-16 code units to the start of the entity")
     length: int = Field(..., description="Length of the entity in UTF-16 code units")
-    url: str | None = Field(
-        None, description="URL that will be opened after user taps on the text"
-    )
+    url: str | None = Field(None, description="URL that will be opened after user taps on the text")
     user: TGUser | None = Field(None, description="User mentioned in the text")
-    language: str | None = Field(
-        None, description="Programming language of the entity text"
-    )
-    custom_emoji_id: str | None = Field(
-        None, description="Unique identifier for a custom emoji"
-    )
+    language: str | None = Field(None, description="Programming language of the entity text")
+    custom_emoji_id: str | None = Field(None, description="Unique identifier for a custom emoji")
 
 
 class KeyboardButton(BaseModel):
     text: str = Field(..., description="Text of the button")
-    request_user: KeyboardButtonRequestUser | None = Field(
-        None, description="User request button"
-    )
-    request_chat: KeyboardButtonRequestChat | None = Field(
-        None, description="Chat request button"
-    )
-    request_contact: bool | None = Field(
-        None, description="Send user's contact when pressed"
-    )
-    request_location: bool | None = Field(
-        None, description="Send user's location when pressed"
-    )
-    request_poll: KeyboardButtonPollType | None = Field(
-        None, description="Send a poll when pressed"
-    )
-    web_app: WebAppInfo | None = Field(
-        None, description="Launch a Web App when pressed"
-    )
+    request_user: KeyboardButtonRequestUser | None = Field(None, description="User request button")
+    request_chat: KeyboardButtonRequestChat | None = Field(None, description="Chat request button")
+    request_contact: bool | None = Field(None, description="Send user's contact when pressed")
+    request_location: bool | None = Field(None, description="Send user's location when pressed")
+    request_poll: KeyboardButtonPollType | None = Field(None, description="Send a poll when pressed")
+    web_app: WebAppInfo | None = Field(None, description="Launch a Web App when pressed")
 
 
 class ReplyKeyboardMarkup(BaseModel):
-    keyboard: list[list[KeyboardButton]] = Field(
-        ..., description="Array of button rows"
-    )
+    keyboard: list[list[KeyboardButton]] = Field(..., description="Array of button rows")
     is_persistent: bool | None = Field(None, description="Keep the keyboard on screen")
-    resize_keyboard: bool | None = Field(
-        None, description="Resize the keyboard vertically for optimal fit"
-    )
-    one_time_keyboard: bool | None = Field(
-        None, description="Hide the keyboard after it's used"
-    )
-    input_field_placeholder: str | None = Field(
-        None, description="Placeholder to be shown in the input field"
-    )
-    selective: bool | None = Field(
-        None, description="Show the keyboard to specific users only"
-    )
+    resize_keyboard: bool | None = Field(None, description="Resize the keyboard vertically for optimal fit")
+    one_time_keyboard: bool | None = Field(None, description="Hide the keyboard after it's used")
+    input_field_placeholder: str | None = Field(None, description="Placeholder to be shown in the input field")
+    selective: bool | None = Field(None, description="Show the keyboard to specific users only")
 
 
 class LoginUrl(BaseModel):
@@ -209,9 +156,7 @@ class LoginUrl(BaseModel):
         ...,
         description="An HTTPS URL to be opened with user authorization data added to the query string",
     )
-    forward_text: str | None = Field(
-        None, description="New text of the button in forwarded messages"
-    )
+    forward_text: str | None = Field(None, description="New text of the button in forwarded messages")
     bot_username: str | None = Field(None, description="Username of a bot")
     request_write_access: bool | None = Field(
         None,
@@ -226,23 +171,15 @@ class CallbackGame(BaseModel):
         None,
         description="Pass True to update the score even if it's lower than the current score",
     )
-    disable_edit_message: bool | None = Field(
-        None, description="Pass True if the high score is allowed to decrease"
-    )
-    chat_id: int | None = Field(
-        None, description="Unique identifier for the target chat"
-    )
+    disable_edit_message: bool | None = Field(None, description="Pass True if the high score is allowed to decrease")
+    chat_id: int | None = Field(None, description="Unique identifier for the target chat")
     message_id: int | None = Field(None, description="Identifier of the sent message")
-    inline_message_id: str | None = Field(
-        None, description="Identifier of the inline message"
-    )
+    inline_message_id: str | None = Field(None, description="Identifier of the inline message")
 
 
 class InlineKeyboardButton(BaseModel):
     text: str = Field(..., description="Label text on the button")
-    url: str | None = Field(
-        None, description="HTTP URL to be opened when button is pressed"
-    )
+    url: str | None = Field(None, description="HTTP URL to be opened when button is pressed")
     callback_data: str | None = Field(
         None,
         description="Data to be sent in a callback query to the bot when button is pressed",
@@ -251,9 +188,7 @@ class InlineKeyboardButton(BaseModel):
         None,
         description="Description of the Web App to be launched when the button is pressed",
     )
-    login_url: LoginUrl | None = Field(
-        None, description="An HTTPS URL used to automatically authorize the user"
-    )
+    login_url: LoginUrl | None = Field(None, description="An HTTPS URL used to automatically authorize the user")
     switch_inline_query: str | None = Field(
         None,
         description="If set, pressing the button will prompt the user to select one of their chats",
@@ -270,15 +205,11 @@ class InlineKeyboardButton(BaseModel):
 
 
 class InlineKeyboardMarkup(BaseModel):
-    inline_keyboard: list[list[InlineKeyboardButton]] = Field(
-        ..., description="Array of button rows"
-    )
+    inline_keyboard: list[list[InlineKeyboardButton]] = Field(..., description="Array of button rows")
 
 
 class ReplyKeyboardRemove(BaseModel):
-    remove_keyboard: bool = Field(
-        default=True, description="Requests clients to remove the custom keyboard"
-    )
+    remove_keyboard: bool = Field(default=True, description="Requests clients to remove the custom keyboard")
     selective: bool | None = Field(
         None,
         description="Use this parameter if you want to remove the keyboard for specific users only",
@@ -287,9 +218,7 @@ class ReplyKeyboardRemove(BaseModel):
 
 class ForceReply(BaseModel):
     force_reply: bool = Field(default=True, description="Forces a reply from the user")
-    input_field_placeholder: str | None = Field(
-        None, description="Placeholder to be shown in the input field"
-    )
+    input_field_placeholder: str | None = Field(None, description="Placeholder to be shown in the input field")
     selective: bool | None = Field(
         None,
         description="Use this parameter if you want to force reply from specific users only",
@@ -298,15 +227,9 @@ class ForceReply(BaseModel):
 
 class LinkPreviewOptions(BaseModel):
     url: str | None = Field(None, description="URL of the link to be previewed")
-    prefer_small_media: bool | None = Field(
-        None, description="Prefer small media file links"
-    )
-    prefer_large_media: bool | None = Field(
-        None, description="Prefer large media file links"
-    )
-    show_above_text: bool | None = Field(
-        None, description="Show the link preview above the message text"
-    )
+    prefer_small_media: bool | None = Field(None, description="Prefer small media file links")
+    prefer_large_media: bool | None = Field(None, description="Prefer large media file links")
+    show_above_text: bool | None = Field(None, description="Show the link preview above the message text")
 
 
 class SendMessagePayload(BaseModel):
@@ -324,18 +247,12 @@ class SendMessagePayload(BaseModel):
         None, description="Disable link previews for links in this message"
     )
 
-    disable_notification: bool | None = Field(
-        None, description="Sends the message silently"
-    )
+    disable_notification: bool | None = Field(None, description="Sends the message silently")
     protect_content: bool = Field(
         True,
         description="Protects the contents of the sent message from forwarding and saving",
     )
 
-    reply_markup: (
-        ReplyKeyboardMarkup
-        | InlineKeyboardMarkup
-        | ReplyKeyboardRemove
-        | ForceReply
-        | None
-    ) = Field(None, description="Additional interface options")
+    reply_markup: ReplyKeyboardMarkup | InlineKeyboardMarkup | ReplyKeyboardRemove | ForceReply | None = Field(
+        None, description="Additional interface options"
+    )
