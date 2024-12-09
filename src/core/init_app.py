@@ -4,18 +4,19 @@ from contextlib import asynccontextmanager
 
 from api import api_router
 from api.v1.sse_views import dashboard_streams
-from contants import STATIC_FOLDER
+from contants import STATIC_FOLDER, APP_FOLDER
 from fastapi import APIRouter, FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 from tools.async_to_sync import run_coroutine_sync
-from tortoise import Tortoise, generate_config
+from tortoise import Tortoise, generate_config, Model
 from tortoise.contrib.fastapi import RegisterTortoise
 
+from tools.class_finder import ClassFinder
 from .async_logger import DEFAULT_LOGGERS, HandlerItem, init_logger
 from .async_logger.handlers import PrintLog
-from .config.db import get_models_paths
+
 from .exceptions import APIException, on_api_exception, validation_exception_handler
 
 logger = logging.getLogger(__name__)
@@ -84,7 +85,9 @@ class App(FastAPI):
 
     def connect_db(self):
         async def awrapper():
-            await Tortoise.init(db_url=str(self.__settings.db_uri), modules={"models": get_models_paths()})
+            await Tortoise.init(db_url=str(self.__settings.db_uri), modules={
+                "models": ClassFinder(APP_FOLDER, Model).build_tortoise_imports()
+            })
             await Tortoise.generate_schemas()
 
         run_coroutine_sync(awrapper())

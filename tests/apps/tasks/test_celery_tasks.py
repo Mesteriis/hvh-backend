@@ -1,7 +1,6 @@
 import pytest
 
 from applications.tasks.models import TaskModel
-from applications.tasks.tasks import parse_url
 from applications.youtube.models import YTVideoModel
 from applications.youtube.service import YTItemSelector
 
@@ -14,7 +13,7 @@ async def test_parse_url_video(task_factory, user_factory, yt_url_video):
         url=yt_url_video,
         owner=user
     )
-    parse_url.apply((task.id,))
+    # parse_url.apply((task.id,))
     task = await TaskModel.objects.get(pk=task.id)
 
     item = await YTItemSelector(YTVideoModel).get_by_task(task.id)

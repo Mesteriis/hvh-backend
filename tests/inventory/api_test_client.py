@@ -14,7 +14,8 @@ class AsyncApiTestClient(AsyncClient):
     auth_user = None
 
     def __init__(self, **kwargs):
-        self._app = kwargs.get("app")
+        self._transport = kwargs.get("transport")
+        self._app = self._transport.app
         super().__init__(**kwargs)
 
     def url_for(self, name: str, /, **path_params: Any) -> str:

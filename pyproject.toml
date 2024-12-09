@@ -35,6 +35,9 @@ tortoise-cli = "^0.1.2"
 
 
 openpyxl = "^3.1.5"
+sqlalchemy = "^2.0.36"
+email-validator = "^2.2.0"
+py3-validate-email = "^1.0.5.post2"
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"

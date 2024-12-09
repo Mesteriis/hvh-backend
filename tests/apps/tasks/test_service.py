@@ -1,4 +1,5 @@
-from sqlalchemy import select
+import pytest
+from tortoise.exceptions import DoesNotExist
 
 from applications.tasks.models import TaskModel
 from applications.tasks.service import TaskSelector, TaskInteractor
@@ -40,16 +41,14 @@ class TestTaskInteractor:
         task = await TaskInteractor.create(
             TaskStruct(url="https://example.com", owner_id=user.id)
         )
-        assert task.owner_id == user.id
+        assert str(task.owner_id) == str(user.id)
 
-    async def test_delete(self, session, user_factory, task_factory):
+    async def test_delete(self, user_factory, task_factory):
         user = await user_factory.create()
         task = await task_factory.create(
             owner_id=user.id
         )
         pk = task.id
         await TaskInteractor.delete(pk)
-        query = select(TaskModel).where(TaskModel.id == pk)
-        task_in_db = await session.execute(query)
-        assert task_in_db.fetchone() is None
-        await session.commit()
+        with pytest.raises(DoesNotExist):
+            await TaskModel.get(pk=pk)

@@ -51,7 +51,7 @@ async def test_update_me(client):
     response = await client.post(url, json=data)
     assert_response(response, 200)
     data_ = response.json()
-    user = await UserModel.objects.get(pk=user.pk)
+    user = await UserModel.get(pk=user.pk)
     assert data_['first_name'] == data['first_name']
     assert user.first_name == data['first_name']
     assert user.last_name == last_name

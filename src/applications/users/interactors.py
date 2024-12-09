@@ -10,14 +10,18 @@ from fastapi import HTTPException
 from .auth.utils.password import get_password_hash
 from .schemas.user_schemas import UserRegisterStruct, UserUpdateStruct
 from .selectors import UserSelector
-
+from tortoise.exceptions import DoesNotExist
 
 class UserInteractor:
     @classmethod
     async def update(cls, user_id, user_data: UserUpdateStruct) -> UserModel:
         user_data: dict = user_data.model_dump(exclude_unset=True)
-        user = await UserSelector.get_by_uid(user_id)
-        await user.update(**user_data)
+        user = await UserModel.get(pk=user_id)
+        update_fields = []
+        for key, value in user_data.items():
+            setattr(user, key, value)
+            update_fields.append(key)
+        await user.save(update_fields=update_fields)
         return user
 
     @classmethod
@@ -28,8 +32,8 @@ class UserInteractor:
                 status_code=400,
                 detail="The user with this username already exists in the system.",
             )
-        except UserModel.NotFoundError:
-            user = await UserModel.objects.create(
+        except DoesNotExist:
+            user = await UserModel.create(
                 email=data.email,
                 hashed_password=get_password_hash(password=data.password),
                 is_active=settings.id_account_verification is False,

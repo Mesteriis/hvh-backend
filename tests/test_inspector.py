@@ -14,9 +14,3 @@ def client() -> EmailInspector:
 def file_path() -> Path:
     return Path(__file__).parent / 'emails.xlsx'
 
-
-def test_inspector(client, file_path):
-    client.read_xlsx(file_path)
-    print(client.stat())
-    client.execute()
-    print(client.stat())

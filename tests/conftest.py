@@ -12,6 +12,8 @@ from tortoise.contrib.test import MEMORY_SQLITE
 
 from tests.inventory.api_test_client import AsyncApiTestClient
 from core.config import settings
+from .inventory.factories import *
+
 
 settings.db_uri = MEMORY_SQLITE
 logger = logging.getLogger(__name__)
@@ -42,9 +44,9 @@ async def client_manager(app, base_url="http://test", **kw) -> AsyncGenerator[As
             yield c
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 async def client() -> AsyncGenerator[AsyncApiTestClient, None]:
-    async with client_manager(app) as c:
+    async with client_manager(app, "http://test") as c:
         yield c
 
 
