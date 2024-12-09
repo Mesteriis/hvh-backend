@@ -143,3 +143,4 @@ src/media/*.avi
 src/media/*.mov
 src/media/*.mkv
 src/media/*.flv
+.cadence
