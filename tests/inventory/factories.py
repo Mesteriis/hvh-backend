@@ -14,7 +14,6 @@ faker = Faker("en_US")
 from asyncio import run
 
 
-# class UserModelFactory(AsyncTortoiseFactory):
 class UserModelFactory(AsyncTortoiseFactory):
     email = LazyAttribute(lambda a: f"{a.first_name}.{a.last_name}@test.com".lower())
     hashed_password = factory.Sequence(lambda n: get_password_hash(f"test_user_{n}@test.com"))

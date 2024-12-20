@@ -10,10 +10,11 @@ from asgi_lifespan import LifespanManager
 from httpx import ASGITransport
 from tortoise.contrib.test import MEMORY_SQLITE
 
+from applications.youtube.service import YTItemInteractor
 from tests.inventory.api_test_client import AsyncApiTestClient
 from core.config import settings
 from .inventory.factories import *
-
+from applications.youtube.models import YTVideoModel, YTChannelModel, YTPlaylistModel
 
 settings.db_uri = MEMORY_SQLITE
 logger = logging.getLogger(__name__)
@@ -51,3 +52,15 @@ async def client() -> AsyncGenerator[AsyncApiTestClient, None]:
 
 
 
+@pytest.fixture(scope="session")
+async def yt_video_interactor():
+    return YTItemInteractor(YTVideoModel)
+
+
+@pytest.fixture(scope="session")
+async def yt_channel_interactor():
+    return YTItemInteractor(YTChannelModel)
+
+@pytest.fixture(scope="session")
+async def yt_playlist_interactor():
+    return YTItemInteractor(YTPlaylistModel)
